@@ -34,13 +34,17 @@ function LoginPage() {
   const [password, setPassword] = useState("");
   const [showPwd, setShowPwd] = useState(false);
   const [captcha, setCaptcha] = useState("");
-  const [captchaCode, setCaptchaCode] = useState(genCaptcha());
+  const [captchaCode, setCaptchaCode] = useState("");
   const [err, setErr] = useState("");
   const [slide, setSlide] = useState(0);
 
   useEffect(() => {
     if (isAuthenticated) navigate({ to: "/dashboard" });
   }, [isAuthenticated, navigate]);
+
+  useEffect(() => {
+    setCaptchaCode(genCaptcha());
+  }, []);
 
   useEffect(() => {
     const t = setInterval(() => setSlide((s) => (s + 1) % CATEGORIES.length), 3000);
