@@ -37,7 +37,7 @@ const DEMO_USER: User = {
   ifsc: "FDRL0001234",
   branch: "Mumbai Main Branch",
   branchAddress: "Federal Bank, Fort Branch, Mumbai - 400001",
-  accountType: "Savings",
+  accountType: "Current",
   mobile: "+91 98******12",
   email: "ra*****@gmail.com",
   kyc: "KYC-9384-2019",
