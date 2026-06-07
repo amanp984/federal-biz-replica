@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Eye, EyeOff, Phone, Calculator, HelpCircle, MoreHorizontal, Globe, RefreshCw } from "lucide-react";
 import { FEDERAL_LOGO_FULL, FEDERAL_LOGO_HORIZONTAL } from "@/lib/logos";
 import { useAuth, DEMO_CREDENTIALS } from "@/lib/auth-store";
+import { LoadingOverlay } from "@/components/LoadingOverlay";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -37,6 +38,7 @@ function LoginPage() {
   const [captchaCode, setCaptchaCode] = useState("");
   const [err, setErr] = useState("");
   const [slide, setSlide] = useState(0);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (isAuthenticated) navigate({ to: "/dashboard" });
@@ -63,11 +65,15 @@ function LoginPage() {
       return setErr(`Invalid credentials. Demo: ${DEMO_CREDENTIALS.userId} / ${DEMO_CREDENTIALS.password}`);
     }
     setPending(userId);
-    navigate({ to: "/otp" });
+    setLoading(true);
+    window.setTimeout(() => {
+      navigate({ to: "/otp" });
+    }, 1000);
   };
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-blue-50 via-white to-orange-50">
+      <LoadingOverlay show={loading} />
       {/* Top utility bar */}
       <div className="bg-fed-blue text-white text-xs">
         <div className="max-w-7xl mx-auto px-4 py-2 flex items-center gap-5 justify-end">

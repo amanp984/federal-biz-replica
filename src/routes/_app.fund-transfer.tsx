@@ -3,6 +3,11 @@ import { useState } from "react";
 import { PageHeader } from "@/components/PageHeader";
 import { OtpStep } from "@/components/OtpStep";
 import { RestrictionPopup } from "@/components/RestrictionPopup";
+import {
+  Wallet, TrendingUp, Users, Calendar, ShieldCheck, Activity,
+  Briefcase, Landmark, PiggyBank, ArrowUpRight, ArrowDownRight, Clock,
+} from "lucide-react";
+import { formatINR } from "@/lib/transactions-store";
 
 export const Route = createFileRoute("/_app/fund-transfer")({
   head: () => ({ meta: [{ title: "Fund Transfer — FED BUSINESS" }] }),
@@ -19,11 +24,22 @@ function FundTransfer() {
   const [restrict, setRestrict] = useState(false);
 
   return (
-    <div className="space-y-5 max-w-2xl mx-auto">
+    <div className="space-y-5">
       <PageHeader title="Fund Transfer" subtitle={`Step ${step} of 4`} />
-      <Stepper step={step} labels={["Beneficiary","Amount","Review","OTP"]} />
 
-      <div className="bg-white border rounded-md shadow-sm p-6">
+      {/* Limits & quick stats */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <StatCard icon={Wallet} label="Daily Limit" value={formatINR(1000000)} accent="blue" />
+        <StatCard icon={TrendingUp} label="Monthly Limit" value={formatINR(25000000)} accent="orange" />
+        <StatCard icon={Activity} label="Remaining Today" value={formatINR(842500)} accent="green" />
+        <StatCard icon={ShieldCheck} label="Account Health" value="Excellent" accent="blue" />
+      </div>
+
+      <div className="grid lg:grid-cols-3 gap-5">
+        {/* Left: transfer flow */}
+        <div className="lg:col-span-2 space-y-5">
+          <Stepper step={step} labels={["Beneficiary","Amount","Review","OTP"]} />
+          <div className="bg-white border rounded-md shadow-sm p-6">
         {step === 1 && (
           <div className="space-y-4">
             <Field label="Select Beneficiary">
@@ -58,9 +74,143 @@ function FundTransfer() {
         {step === 4 && (
           <OtpStep seconds={54} onVerify={() => setRestrict(true)} />
         )}
+          </div>
+
+          {/* Transfer insights */}
+          <Panel title="Transfer Insights" icon={Activity}>
+            <div className="grid grid-cols-3 gap-3 text-center">
+              <Insight label="This Month" value={formatINR(1845200)} delta="+12.4%" up />
+              <Insight label="Last Month" value={formatINR(1641300)} delta="-3.1%" />
+              <Insight label="Avg / Transfer" value={formatINR(38450)} delta="+5.2%" up />
+            </div>
+          </Panel>
+
+          {/* Scheduled transfers */}
+          <Panel title="Scheduled Transfers" icon={Calendar}>
+            <ul className="divide-y text-sm">
+              {SCHEDULED.map((s) => (
+                <li key={s.id} className="py-2.5 flex items-center justify-between gap-3">
+                  <div>
+                    <div className="font-semibold text-foreground">{s.payee}</div>
+                    <div className="text-xs text-muted-foreground flex items-center gap-1">
+                      <Clock size={12} /> {s.when} · {s.mode}
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="font-semibold">{formatINR(s.amount)}</div>
+                    <div className="text-[11px] text-fed-blue">{s.status}</div>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </Panel>
+        </div>
+
+        {/* Right: rich info column */}
+        <div className="space-y-5">
+          <Panel title="Linked Accounts" icon={Wallet}>
+            <ul className="text-sm space-y-2.5">
+              {LINKED.map((a) => (
+                <li key={a.no} className="flex items-start justify-between gap-3">
+                  <div>
+                    <div className="font-semibold">{a.type}</div>
+                    <div className="text-xs text-muted-foreground">****{a.no.slice(-4)}</div>
+                  </div>
+                  <div className="font-semibold text-fed-blue">{formatINR(a.balance)}</div>
+                </li>
+              ))}
+            </ul>
+          </Panel>
+
+          <Panel title="Recent Beneficiaries" icon={Users}>
+            <ul className="text-sm space-y-2">
+              {BENS.map((b) => (
+                <li key={b} className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-fed-blue/10 text-fed-blue grid place-items-center text-xs font-bold">
+                    {b.charAt(0)}
+                  </div>
+                  <span className="truncate">{b}</span>
+                </li>
+              ))}
+            </ul>
+          </Panel>
+
+          <Panel title="Business Profile" icon={Briefcase}>
+            <dl className="text-xs space-y-1.5">
+              <Row k="Entity Type" v="Private Limited" />
+              <Row k="GSTIN" v="27ABCDE1234F1Z5" />
+              <Row k="Relationship Mgr" v="R. Iyer" />
+              <Row k="RM Contact" v="+91 98******40" />
+            </dl>
+          </Panel>
+
+          <Panel title="Loan Summary" icon={Landmark}>
+            <dl className="text-xs space-y-1.5">
+              <Row k="Active Loans" v="2" />
+              <Row k="Outstanding" v={formatINR(4250000)} />
+              <Row k="Next EMI" v={`${formatINR(58400)} · 12 Jul`} />
+            </dl>
+          </Panel>
+
+          <Panel title="Investment Summary" icon={PiggyBank}>
+            <dl className="text-xs space-y-1.5">
+              <Row k="FDs" v={formatINR(2150000)} />
+              <Row k="Mutual Funds" v={formatINR(1380000)} />
+              <Row k="Total Portfolio" v={formatINR(3530000)} />
+            </dl>
+          </Panel>
+        </div>
       </div>
 
       <RestrictionPopup open={restrict} onClose={() => { setRestrict(false); setStep(1); setAmount(""); setRemark(""); }} />
+    </div>
+  );
+}
+
+const SCHEDULED = [
+  { id: 1, payee: "Sneha Verma", when: "Tomorrow, 09:00", mode: "NEFT", amount: 48500, status: "Active" },
+  { id: 2, payee: "Vendor — Acme Pvt Ltd", when: "12 Jul, 11:00", mode: "RTGS", amount: 215000, status: "Active" },
+  { id: 3, payee: "Payroll Batch #07", when: "01 Aug, 06:00", mode: "IMPS", amount: 1480000, status: "Scheduled" },
+];
+
+const LINKED = [
+  { type: "Current", no: "99980128562266", balance: 845000 },
+  { type: "Overdraft", no: "99980128562288", balance: 1250000 },
+  { type: "Escrow", no: "99980128562299", balance: 620000 },
+];
+
+function StatCard({ icon: Icon, label, value, accent }: { icon: React.ComponentType<{ size?: number }>; label: string; value: string; accent: "blue" | "orange" | "green" }) {
+  const tone = accent === "blue" ? "text-fed-blue bg-fed-blue/10" : accent === "orange" ? "text-fed-orange bg-fed-orange/10" : "text-fed-green bg-fed-green/10";
+  return (
+    <div className="bg-white border rounded-md shadow-sm p-4 flex items-center gap-3">
+      <div className={`w-10 h-10 rounded-md grid place-items-center ${tone}`}><Icon size={20} /></div>
+      <div className="min-w-0">
+        <div className="text-[11px] uppercase tracking-wide text-muted-foreground truncate">{label}</div>
+        <div className="text-sm font-bold truncate">{value}</div>
+      </div>
+    </div>
+  );
+}
+
+function Panel({ title, icon: Icon, children }: { title: string; icon: React.ComponentType<{ size?: number }>; children: React.ReactNode }) {
+  return (
+    <section className="bg-white border rounded-md shadow-sm overflow-hidden">
+      <header className="bg-fed-blue/5 border-b px-4 py-2.5 flex items-center gap-2 text-fed-blue">
+        <Icon size={16} /> <h3 className="text-sm font-semibold">{title}</h3>
+      </header>
+      <div className="p-4">{children}</div>
+    </section>
+  );
+}
+
+function Insight({ label, value, delta, up }: { label: string; value: string; delta: string; up?: boolean }) {
+  return (
+    <div className="rounded-md border bg-secondary/40 p-3">
+      <div className="text-[11px] text-muted-foreground uppercase">{label}</div>
+      <div className="font-bold text-sm mt-0.5">{value}</div>
+      <div className={`text-[11px] mt-1 inline-flex items-center gap-0.5 ${up ? "text-fed-green" : "text-destructive"}`}>
+        {up ? <ArrowUpRight size={12} /> : <ArrowDownRight size={12} />}{delta}
+      </div>
     </div>
   );
 }
