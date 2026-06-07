@@ -74,14 +74,14 @@
 
 :root {
   --radius: 0.625rem;
-  /* FED BIZ — Federal Bank palette */
+  /* FED BUSINESS — FED BUSINESS palette */
   --background: oklch(0.985 0.005 240);
   --foreground: oklch(0.20 0.04 255);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.20 0.04 255);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.20 0.04 255);
-  /* Federal Bank deep blue */
+  /* FED BUSINESS deep blue */
   --primary: oklch(0.42 0.20 258);
   --primary-foreground: oklch(1 0 0);
   /* Sidebar grey */
@@ -89,7 +89,7 @@
   --secondary-foreground: oklch(0.25 0.04 255);
   --muted: oklch(0.955 0.005 250);
   --muted-foreground: oklch(0.48 0.02 255);
-  /* Federal Bank orange accent */
+  /* FED BUSINESS orange accent */
   --accent: oklch(0.75 0.18 60);
   --accent-foreground: oklch(1 0 0);
   --destructive: oklch(0.577 0.245 27.325);

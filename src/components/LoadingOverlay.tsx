@@ -14,7 +14,7 @@ export function LoadingOverlay({ show }: { show: boolean }) {
         >
           <motion.img
             src={FEDERAL_LOGO_FULL}
-            alt="Federal Bank"
+            alt="FED BUSINESS"
             initial={{ scale: 0.9 }}
             animate={{ scale: 1 }}
             className="w-40 h-auto drop-shadow"

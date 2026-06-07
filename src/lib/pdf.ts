@@ -14,10 +14,10 @@ export function downloadStatementPDF(user: User, txs: Transaction[]) {
   doc.setTextColor(255, 255, 255);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(16);
-  doc.text("FED BIZ", 14, 14);
+  doc.text("FED BUSINESS", 14, 14);
   doc.setFontSize(10);
   doc.setFont("helvetica", "normal");
-  doc.text("Federal Bank — Account Statement", w - 14, 14, { align: "right" });
+  doc.text("FED BUSINESS — Account Statement", w - 14, 14, { align: "right" });
 
   // Customer block
   doc.setTextColor(20, 20, 20);
@@ -27,7 +27,7 @@ export function downloadStatementPDF(user: User, txs: Transaction[]) {
   line("Customer ID:", user.customerId);
   line("Account No:", user.accountNumber);
   line("IFSC:", user.ifsc);
-  line("Branch:", user.branch);
+  line("Office:", user.branch);
   line("Generated:", new Date().toLocaleString("en-IN"));
 
   const running = withRunningBalance(txs);
@@ -71,7 +71,7 @@ export function downloadStatementPDF(user: User, txs: Transaction[]) {
 
   doc.setFontSize(8); doc.setTextColor(110);
   doc.text("This is a computer-generated statement and does not require a signature.", 14, 290);
-  doc.save(`FedBiz_Statement_${user.accountNumber}.pdf`);
+  doc.save(`FedBusiness_Statement_${user.accountNumber}.pdf`);
 }
 
 export function downloadCSV(filename: string, rows: (string | number)[][]) {

@@ -5,7 +5,7 @@ import { useAuth, DEMO_USER } from "@/lib/auth-store";
 import { FEDERAL_LOGO_HORIZONTAL } from "@/lib/logos";
 
 export const Route = createFileRoute("/otp")({
-  head: () => ({ meta: [{ title: "OTP Verification — FED BIZ" }] }),
+  head: () => ({ meta: [{ title: "OTP Verification — FED BUSINESS" }] }),
   component: OtpPage,
 });
 
@@ -21,9 +21,9 @@ function OtpPage() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-orange-50 flex flex-col">
       <div className="bg-white border-b-4 border-fed-orange shadow-sm">
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center gap-3">
-          <img src={FEDERAL_LOGO_HORIZONTAL} alt="Federal Bank" className="h-10" />
+          <img src={FEDERAL_LOGO_HORIZONTAL} alt="FED BUSINESS" className="h-10" />
           <div className="border-l h-7 mx-1" />
-          <div className="text-fed-blue font-bold">FED BIZ</div>
+          <div className="text-fed-blue font-bold">FED BUSINESS</div>
         </div>
       </div>
       <div className="flex-1 grid place-items-center p-4">

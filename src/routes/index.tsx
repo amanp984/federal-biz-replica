@@ -8,10 +8,10 @@ import { useAuth, DEMO_CREDENTIALS } from "@/lib/auth-store";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "FED BIZ — Federal Bank Corporate Internet Banking" },
-      { name: "description", content: "Sign in to FED BIZ, Federal Bank's secure corporate internet banking portal." },
-      { property: "og:title", content: "FED BIZ — Federal Bank" },
-      { property: "og:description", content: "Secure corporate internet banking by Federal Bank." },
+      { title: "FED BUSINESS — FED BUSINESS Corporate Workspace" },
+      { name: "description", content: "Sign in to FED BUSINESS, FED BUSINESS's secure corporate workspace portal." },
+      { property: "og:title", content: "FED BUSINESS — FED BUSINESS" },
+      { property: "og:description", content: "Secure corporate workspace by FED BUSINESS." },
     ],
   }),
   component: LoginPage,
@@ -21,7 +21,7 @@ const CATEGORIES = [
   { title: "Personal Loan", desc: "Quick loans at competitive rates", color: "from-blue-500 to-blue-700" },
   { title: "Home Loan", desc: "Make your dream home a reality", color: "from-emerald-500 to-emerald-700" },
   { title: "Car Loan", desc: "Drive home your new car today", color: "from-orange-500 to-orange-700" },
-  { title: "Credit Card", desc: "Exclusive rewards for FED BIZ users", color: "from-purple-500 to-purple-700" },
+  { title: "Credit Card", desc: "Exclusive rewards for FED BUSINESS users", color: "from-purple-500 to-purple-700" },
   { title: "Insurance", desc: "Protect what matters most", color: "from-rose-500 to-rose-700" },
   { title: "Investments", desc: "Grow wealth with smart options", color: "from-amber-500 to-amber-700" },
   { title: "FD Offers", desc: "Special rates on fixed deposits", color: "from-teal-500 to-teal-700" },
@@ -84,11 +84,11 @@ function LoginPage() {
       {/* Brand bar */}
       <div className="bg-white border-b-4 border-fed-orange shadow-sm">
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center gap-4">
-          <img src={FEDERAL_LOGO_HORIZONTAL} alt="Federal Bank" className="h-10 w-auto" />
+          <img src={FEDERAL_LOGO_HORIZONTAL} alt="FED BUSINESS" className="h-10 w-auto" />
           <div className="border-l border-border h-8" />
           <div>
-            <div className="text-lg font-bold text-fed-blue tracking-wide">FED BIZ</div>
-            <div className="text-[11px] text-muted-foreground -mt-0.5">Corporate Internet Banking</div>
+            <div className="text-lg font-bold text-fed-blue tracking-wide">FED BUSINESS</div>
+            <div className="text-[11px] text-muted-foreground -mt-0.5">Corporate Workspace</div>
           </div>
         </div>
       </div>
@@ -97,9 +97,9 @@ function LoginPage() {
         {/* Left: ads + info */}
         <div className="space-y-5">
           <div className="bg-fed-blue text-white rounded-md p-6 border-b-4 border-fed-orange shadow">
-            <h2 className="text-2xl font-bold mb-1">Welcome to FED BIZ</h2>
+            <h2 className="text-2xl font-bold mb-1">Welcome to FED BUSINESS</h2>
             <p className="text-sm opacity-90">
-              Federal Bank's secure corporate internet banking platform. Manage accounts, transfers, and payments — anywhere, anytime.
+              FED BUSINESS's secure corporate workspace platform. Manage accounts, transfers, and payments — anywhere, anytime.
             </p>
           </div>
 
@@ -141,7 +141,7 @@ function LoginPage() {
           <div className="bg-fed-blue text-white px-6 py-4 border-b-4 border-fed-orange flex items-center gap-3">
             <img src={FEDERAL_LOGO_FULL} alt="" className="w-10 h-10 bg-white rounded p-1" />
             <div>
-              <div className="font-bold text-lg leading-tight">Sign in to FED BIZ</div>
+              <div className="font-bold text-lg leading-tight">Sign in to FED BUSINESS</div>
               <div className="text-xs opacity-85">Use your corporate credentials</div>
             </div>
           </div>
@@ -213,14 +213,14 @@ function LoginPage() {
             </div>
 
             <div className="text-xs text-muted-foreground pt-2 text-center border-t mt-3">
-              Powered by <span className="font-semibold text-fed-blue">Federal Bank</span>
+              Powered by <span className="font-semibold text-fed-blue">FED BUSINESS</span>
             </div>
           </form>
         </div>
       </div>
 
       <footer className="bg-fed-blue text-white text-xs text-center py-3">
-        © {new Date().getFullYear()} The Federal Bank Ltd. — FED BIZ Corporate Net Banking.
+        © {new Date().getFullYear()} FED BUSINESS — FED BUSINESS Corporate Workspace.
       </footer>
     </div>
   );

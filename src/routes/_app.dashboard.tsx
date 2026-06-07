@@ -7,7 +7,7 @@ import { computeBalance, formatINR, useTransactions, withRunningBalance } from "
 import { downloadStatementPDF } from "@/lib/pdf";
 
 export const Route = createFileRoute("/_app/dashboard")({
-  head: () => ({ meta: [{ title: "Dashboard — FED BIZ" }] }),
+  head: () => ({ meta: [{ title: "Dashboard — FED BUSINESS" }] }),
   component: Dashboard,
 });
 

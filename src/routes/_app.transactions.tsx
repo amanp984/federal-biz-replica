@@ -7,7 +7,7 @@ import { downloadCSV, downloadStatementPDF } from "@/lib/pdf";
 import { useAuth } from "@/lib/auth-store";
 
 export const Route = createFileRoute("/_app/transactions")({
-  head: () => ({ meta: [{ title: "Transactions — FED BIZ" }] }),
+  head: () => ({ meta: [{ title: "Transactions — FED BUSINESS" }] }),
   component: TransactionsPage,
 });
 
@@ -33,7 +33,7 @@ function TransactionsPage() {
   const slice = filtered.slice((page - 1) * perPage, page * perPage);
 
   const exportCSV = () => {
-    downloadCSV(`FedBiz_Transactions.csv`, [
+    downloadCSV(`FedBusiness_Transactions.csv`, [
       ["Date","Description","Reference","Debit","Credit","Balance"],
       ...filtered.map((t) => [
         new Date(t.date).toLocaleDateString("en-IN"),

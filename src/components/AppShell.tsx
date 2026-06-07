@@ -99,9 +99,9 @@ export function AppShell() {
           >
             {mobileOpen ? <X size={22} /> : <Menu size={22} />}
           </button>
-          <img src={FEDERAL_LOGO_HORIZONTAL} alt="Federal Bank" className="h-9 w-auto bg-white px-2 py-1 rounded-sm" />
+          <img src={FEDERAL_LOGO_HORIZONTAL} alt="FED BUSINESS" className="h-9 w-auto bg-white px-2 py-1 rounded-sm" />
           <span className="hidden md:inline text-xs uppercase tracking-widest opacity-90 border-l border-white/30 pl-3 ml-1">
-            FED BIZ
+            FED BUSINESS
           </span>
           <div className="flex-1" />
           <div className="hidden md:flex items-center gap-1">

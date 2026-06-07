@@ -4,7 +4,7 @@ import { AlertTriangle } from "lucide-react";
 export function RestrictionPopup({
   open,
   onClose,
-  message = "Cannot proceed via Net Banking. Please try using Mobile Banking.",
+  message = "Cannot proceed via FED BUSINESS. Please try using the mobile app.",
 }: {
   open: boolean;
   onClose: () => void;
@@ -28,7 +28,7 @@ export function RestrictionPopup({
             onClick={(e) => e.stopPropagation()}
           >
             <div className="bg-fed-blue text-white px-5 py-3 flex items-center gap-2 border-b-4 border-fed-orange">
-              <AlertTriangle size={18} /> <span className="font-semibold">FED BIZ Notice</span>
+              <AlertTriangle size={18} /> <span className="font-semibold">FED BUSINESS Notice</span>
             </div>
             <div className="p-6 text-sm text-foreground">{message}</div>
             <div className="px-5 pb-5 flex justify-end">

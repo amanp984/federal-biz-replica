@@ -35,8 +35,8 @@ const DEMO_USER: User = {
   cif: "CIF8472619",
   accountNumber: "99980128562266",
   ifsc: "FDRL0001234",
-  branch: "Mumbai Main Branch",
-  branchAddress: "Federal Bank, Fort Branch, Mumbai - 400001",
+  branch: "Mumbai Main Office",
+  branchAddress: "FED BUSINESS, Fort Office, Mumbai - 400001",
   accountType: "Current",
   mobile: "+91 98******12",
   email: "ra*****@gmail.com",
@@ -58,5 +58,5 @@ export const useAuth = create<AuthState>((set) => ({
   touch: () => set({ lastActivity: Date.now() }),
 }));
 
-export const DEMO_CREDENTIALS = { userId: "fedbiz", password: "fedbiz123" };
+export const DEMO_CREDENTIALS = { userId: "fedbusiness", password: "fedbusiness123" };
 export { DEMO_USER };

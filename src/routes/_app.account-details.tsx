@@ -8,7 +8,7 @@ import { downloadStatementPDF } from "@/lib/pdf";
 import { FEDERAL_LOGO_FULL } from "@/lib/logos";
 
 export const Route = createFileRoute("/_app/account-details")({
-  head: () => ({ meta: [{ title: "Account Details — FED BIZ" }] }),
+  head: () => ({ meta: [{ title: "Account Details — FED BUSINESS" }] }),
   component: AccountDetails,
 });
 
@@ -49,7 +49,7 @@ function AccountDetails() {
           <Row k="CIF" v={user.cif} />
           <Row k="Account Number" v={user.accountNumber} />
           <Row k="IFSC" v={user.ifsc} />
-          <Row k="Branch" v={user.branch} />
+          <Row k="Office" v={user.branch} />
           <Row k="Account Type" v={user.accountType} />
         </dl>
       </div>

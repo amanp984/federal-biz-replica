@@ -5,7 +5,7 @@ import { OtpStep } from "@/components/OtpStep";
 import { RestrictionPopup } from "@/components/RestrictionPopup";
 
 export const Route = createFileRoute("/_app/mobile-recharge")({
-  head: () => ({ meta: [{ title: "Mobile Recharge — FED BIZ" }] }),
+  head: () => ({ meta: [{ title: "Mobile Recharge — FED BUSINESS" }] }),
   component: Recharge,
 });
 const OPS = ["Airtel", "Jio", "Vi", "BSNL"];
