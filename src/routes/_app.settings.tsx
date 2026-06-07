@@ -6,7 +6,7 @@ import { formatINR } from "@/lib/transactions-store";
 import { RestrictionPopup } from "@/components/RestrictionPopup";
 
 export const Route = createFileRoute("/_app/settings")({
-  head: () => ({ meta: [{ title: "Settings — FED BIZ" }] }),
+  head: () => ({ meta: [{ title: "Settings — FED BUSINESS" }] }),
   component: SettingsPage,
 });
 
@@ -29,7 +29,7 @@ function SettingsPage() {
           <Row k="Registered Email" v={user.email} />
           <Row k="KYC Number" v={user.kyc} />
           <Row k="Address" v={user.address} />
-          <Row k="Branch" v={user.branchAddress} />
+          <Row k="Office" v={user.branchAddress} />
         </dl>
       </div>
       <div className="bg-white border rounded-md shadow-sm overflow-hidden">
@@ -42,7 +42,7 @@ function SettingsPage() {
           <button onClick={() => setPop(true)} className="bg-fed-blue text-white px-4 py-2 rounded font-semibold">Manage Limit</button>
         </div>
       </div>
-      <RestrictionPopup open={pop} onClose={() => setPop(false)} message="Please contact branch for limit upgrade." />
+      <RestrictionPopup open={pop} onClose={() => setPop(false)} message="Please contact support for limit upgrade." />
     </div>
   );
 }

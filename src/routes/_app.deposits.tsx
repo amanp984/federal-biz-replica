@@ -3,11 +3,11 @@ import { PiggyBank } from "lucide-react";
 import { PageHeader } from "@/components/PageHeader";
 
 export const Route = createFileRoute("/_app/deposits")({
-  head: () => ({ meta: [{ title: "Deposits — FED BIZ" }] }),
+  head: () => ({ meta: [{ title: "Deposits — FED BUSINESS" }] }),
   component: () => (
     <div className="space-y-5">
       <PageHeader title="Deposits" />
-      <EmptyCard icon={PiggyBank} title="No Fixed Deposit available" desc="Please contact your branch to open a new fixed deposit." />
+      <EmptyCard icon={PiggyBank} title="No Fixed Deposit available" desc="Please contact our support team to open a new fixed deposit." />
     </div>
   ),
 });

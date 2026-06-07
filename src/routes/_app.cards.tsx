@@ -6,7 +6,7 @@ import { OtpStep } from "@/components/OtpStep";
 import { RestrictionPopup } from "@/components/RestrictionPopup";
 
 export const Route = createFileRoute("/_app/cards")({
-  head: () => ({ meta: [{ title: "Cards — FED BIZ" }] }),
+  head: () => ({ meta: [{ title: "Cards — FED BUSINESS" }] }),
   component: Cards,
 });
 
@@ -74,7 +74,7 @@ function Cards() {
         </div>
       )}
 
-      <RestrictionPopup open={limitPop} onClose={() => setLimitPop(false)} message="Please use Mobile Banking to manage card limits." />
+      <RestrictionPopup open={limitPop} onClose={() => setLimitPop(false)} message="Please use the mobile app to manage card limits." />
       <RestrictionPopup open={successPop} onClose={() => setSuccessPop(false)} message="Card status updated successfully." />
     </div>
   );

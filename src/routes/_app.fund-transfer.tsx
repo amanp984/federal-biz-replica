@@ -5,11 +5,11 @@ import { OtpStep } from "@/components/OtpStep";
 import { RestrictionPopup } from "@/components/RestrictionPopup";
 
 export const Route = createFileRoute("/_app/fund-transfer")({
-  head: () => ({ meta: [{ title: "Fund Transfer — FED BIZ" }] }),
+  head: () => ({ meta: [{ title: "Fund Transfer — FED BUSINESS" }] }),
   component: FundTransfer,
 });
 
-const BENS = ["Rahul Sharma — HDFC", "Sneha Verma — Federal Bank", "Pooja Singh — ICICI"];
+const BENS = ["Rahul Sharma — HDFC", "Sneha Verma — FED BUSINESS", "Pooja Singh — ICICI"];
 
 function FundTransfer() {
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1);

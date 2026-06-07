@@ -3,14 +3,14 @@ import { PageHeader } from "@/components/PageHeader";
 import { Users } from "lucide-react";
 
 export const Route = createFileRoute("/_app/beneficiaries")({
-  head: () => ({ meta: [{ title: "Beneficiaries — FED BIZ" }] }),
+  head: () => ({ meta: [{ title: "Beneficiaries — FED BUSINESS" }] }),
   component: Beneficiaries,
 });
 
 const BENS = [
-  { name: "Rahul Sharma", bank: "HDFC Bank", upi: "rahul@okhdfc", added: "2025-04-12" },
-  { name: "Sneha Verma", bank: "Federal Bank", upi: "sneha@fed", added: "2025-05-02" },
-  { name: "Pooja Singh", bank: "ICICI Bank", upi: "pooja@okicici", added: "2025-05-30" },
+  { name: "Rahul Sharma", bank: "HDFC", upi: "rahul@okhdfc", added: "2025-04-12" },
+  { name: "Sneha Verma", bank: "FED BUSINESS", upi: "sneha@fed", added: "2025-05-02" },
+  { name: "Pooja Singh", bank: "ICICI", upi: "pooja@okicici", added: "2025-05-30" },
 ];
 
 function Beneficiaries() {

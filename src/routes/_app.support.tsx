@@ -3,14 +3,14 @@ import { Phone, Mail, HelpCircle } from "lucide-react";
 import { PageHeader } from "@/components/PageHeader";
 
 export const Route = createFileRoute("/_app/support")({
-  head: () => ({ meta: [{ title: "Support — FED BIZ" }] }),
+  head: () => ({ meta: [{ title: "Support — FED BUSINESS" }] }),
   component: () => (
     <div className="space-y-5">
       <PageHeader title="Support" subtitle="We're here to help, 24x7" />
       <div className="grid md:grid-cols-3 gap-4">
         {[
           { icon: Phone, label: "Call Us", value: "1800 425 1199" },
-          { icon: Mail, label: "Email", value: "fedbiz@federalbank.co.in" },
+          { icon: Mail, label: "Email", value: "fedbiz@fedbusiness.com" },
           { icon: HelpCircle, label: "Help Center", value: "Browse FAQs" },
         ].map((s) => (
           <div key={s.label} className="bg-white border rounded-md p-6 text-center">

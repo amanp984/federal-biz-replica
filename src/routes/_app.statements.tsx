@@ -6,7 +6,7 @@ import { useTransactions } from "@/lib/transactions-store";
 import { downloadStatementPDF } from "@/lib/pdf";
 
 export const Route = createFileRoute("/_app/statements")({
-  head: () => ({ meta: [{ title: "Statements — FED BIZ" }] }),
+  head: () => ({ meta: [{ title: "Statements — FED BUSINESS" }] }),
   component: Statements,
 });
 function Statements() {

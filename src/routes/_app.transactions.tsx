@@ -7,7 +7,7 @@ import { downloadCSV, downloadStatementPDF } from "@/lib/pdf";
 import { useAuth } from "@/lib/auth-store";
 
 export const Route = createFileRoute("/_app/transactions")({
-  head: () => ({ meta: [{ title: "Transactions — FED BIZ" }] }),
+  head: () => ({ meta: [{ title: "Transactions — FED BUSINESS" }] }),
   component: TransactionsPage,
 });
 

@@ -5,7 +5,7 @@ import { useAuth } from "@/lib/auth-store";
 import { computeBalance, formatINR, useTransactions } from "@/lib/transactions-store";
 
 export const Route = createFileRoute("/_app/accounts")({
-  head: () => ({ meta: [{ title: "Accounts — FED BIZ" }] }),
+  head: () => ({ meta: [{ title: "Accounts — FED BUSINESS" }] }),
   component: Accounts,
 });
 
@@ -27,7 +27,7 @@ function Accounts() {
         </div>
         <div className="p-5 grid sm:grid-cols-3 gap-4 text-sm">
           <div><div className="text-muted-foreground text-xs">IFSC</div><div className="font-semibold">{user.ifsc}</div></div>
-          <div><div className="text-muted-foreground text-xs">Branch</div><div className="font-semibold">{user.branch}</div></div>
+          <div><div className="text-muted-foreground text-xs">Office</div><div className="font-semibold">{user.branch}</div></div>
           <div className="sm:text-right"><div className="text-muted-foreground text-xs">Available Balance</div><div className="font-bold text-fed-green-dark text-lg">{formatINR(bal)}</div></div>
         </div>
       </Link>

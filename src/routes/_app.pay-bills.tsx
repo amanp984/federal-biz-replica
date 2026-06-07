@@ -6,7 +6,7 @@ import { OtpStep } from "@/components/OtpStep";
 import { RestrictionPopup } from "@/components/RestrictionPopup";
 
 export const Route = createFileRoute("/_app/pay-bills")({
-  head: () => ({ meta: [{ title: "Pay Bills — FED BIZ" }] }),
+  head: () => ({ meta: [{ title: "Pay Bills — FED BUSINESS" }] }),
   component: PayBills,
 });
 
