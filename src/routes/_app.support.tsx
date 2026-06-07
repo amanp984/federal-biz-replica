@@ -10,7 +10,7 @@ export const Route = createFileRoute("/_app/support")({
       <div className="grid md:grid-cols-3 gap-4">
         {[
           { icon: Phone, label: "Call Us", value: "1800 425 1199" },
-          { icon: Mail, label: "Email", value: "fedbiz@fedbusiness.com" },
+          { icon: Mail, label: "Email", value: "support@fedbusiness.com" },
           { icon: HelpCircle, label: "Help Center", value: "Browse FAQs" },
         ].map((s) => (
           <div key={s.label} className="bg-white border rounded-md p-6 text-center">

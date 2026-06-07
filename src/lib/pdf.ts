@@ -71,7 +71,7 @@ export function downloadStatementPDF(user: User, txs: Transaction[]) {
 
   doc.setFontSize(8); doc.setTextColor(110);
   doc.text("This is a computer-generated statement and does not require a signature.", 14, 290);
-  doc.save(`FedBiz_Statement_${user.accountNumber}.pdf`);
+  doc.save(`FedBusiness_Statement_${user.accountNumber}.pdf`);
 }
 
 export function downloadCSV(filename: string, rows: (string | number)[][]) {
