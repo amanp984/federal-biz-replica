@@ -339,6 +339,17 @@ function Field({ k, v }: { k: string; v: string }) {
     </div>
   );
 }
+function StatusBadge({ status }: { status: "Active" | "Inactive" }) {
+  const isActive = status === "Active";
+  return (
+    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold ${
+      isActive ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"
+    }`}>
+      <span className={`w-1.5 h-1.5 rounded-full ${isActive ? "bg-emerald-600" : "bg-amber-600"}`} />
+      {status}
+    </span>
+  );
+}
 function Row({ k, v }: { k: string; v: string }) {
   return (
     <div className="flex justify-between gap-3">
