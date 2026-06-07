@@ -4,7 +4,7 @@ import { PageHeader } from "@/components/PageHeader";
 import { RestrictionPopup } from "@/components/RestrictionPopup";
 import {
   Users, UserPlus, Settings as SettingsIcon, FileText, Landmark, PiggyBank,
-  Activity, Star, BarChart3, Wallet, Pencil, Trash2, Eye,
+  Activity, Star, BarChart3, Wallet, Pencil, Trash2, Eye, Search, ArrowUpDown, Filter,
 } from "lucide-react";
 import { formatINR } from "@/lib/transactions-store";
 
@@ -14,22 +14,23 @@ export const Route = createFileRoute("/_app/beneficiaries")({
 });
 
 interface Beneficiary {
-  name: string; bank: string; acct: string; ifsc: string; type: string; added: string;
+  name: string; bank: string; acct: string; ifsc: string; type: string;
+  added: string; lastTransfer: string; status: "Active" | "Inactive";
 }
 
 const BENS: Beneficiary[] = [
-  { name: "Rahul Sharma",        bank: "HDFC",         acct: "XXXXXX4582", ifsc: "HDFC0001234", type: "Savings", added: "2025-04-12" },
-  { name: "Sneha Verma",         bank: "FED BUSINESS", acct: "XXXXXX9271", ifsc: "FDRL0001234", type: "Current", added: "2025-05-02" },
-  { name: "Pooja Singh",         bank: "ICICI",        acct: "XXXXXX1845", ifsc: "ICIC0004567", type: "Savings", added: "2025-05-30" },
-  { name: "Amit Patel",          bank: "SBI",          acct: "XXXXXX6723", ifsc: "SBIN0005678", type: "Current", added: "2025-06-08" },
-  { name: "Acme Vendors Pvt Ltd",bank: "Axis",         acct: "XXXXXX3019", ifsc: "UTIB0009876", type: "Current", added: "2025-06-15" },
-  { name: "Priya Nair",          bank: "Kotak",        acct: "XXXXXX8842", ifsc: "KKBK0002345", type: "Savings", added: "2025-06-22" },
-  { name: "Globex Logistics",    bank: "FED BUSINESS", acct: "XXXXXX5510", ifsc: "FDRL0001234", type: "Current", added: "2025-07-01" },
-  { name: "Vikram Reddy",        bank: "Yes Bank",     acct: "XXXXXX2134", ifsc: "YESB0003456", type: "Salary",  added: "2025-07-09" },
-  { name: "Initech Solutions",   bank: "IndusInd",     acct: "XXXXXX7765", ifsc: "INDB0007890", type: "Current", added: "2025-07-15" },
-  { name: "Nikita Kapoor",       bank: "HDFC",         acct: "XXXXXX9387", ifsc: "HDFC0009912", type: "Savings", added: "2025-07-21" },
-  { name: "Stark Industries",    bank: "ICICI",        acct: "XXXXXX4421", ifsc: "ICIC0008870", type: "Current", added: "2025-07-28" },
-  { name: "Karan Mehra",         bank: "Punjab Natl",  acct: "XXXXXX0099", ifsc: "PUNB0123456", type: "Savings", added: "2025-08-02" },
+  { name: "Rahul Sharma",         bank: "HDFC Bank",        acct: "XXXXXX4582", ifsc: "HDFC0001234", type: "Savings", added: "2025-04-12", lastTransfer: "2026-06-05", status: "Active" },
+  { name: "Sneha Verma",          bank: "FED BUSINESS",     acct: "XXXXXX9271", ifsc: "FDRL0001234", type: "Current", added: "2025-05-02", lastTransfer: "2026-06-04", status: "Active" },
+  { name: "Pooja Singh",          bank: "ICICI Bank",       acct: "XXXXXX1845", ifsc: "ICIC0004567", type: "Savings", added: "2025-05-30", lastTransfer: "2026-05-28", status: "Active" },
+  { name: "Amit Patel",           bank: "State Bank of India", acct: "XXXXXX6723", ifsc: "SBIN0005678", type: "Current", added: "2025-06-08", lastTransfer: "2026-06-01", status: "Active" },
+  { name: "Acme Vendors Pvt Ltd", bank: "Axis Bank",        acct: "XXXXXX3019", ifsc: "UTIB0009876", type: "Current", added: "2025-06-15", lastTransfer: "2026-06-06", status: "Active" },
+  { name: "Priya Nair",           bank: "Kotak Mahindra",   acct: "XXXXXX8842", ifsc: "KKBK0002345", type: "Savings", added: "2025-06-22", lastTransfer: "2026-05-21", status: "Active" },
+  { name: "Globex Logistics",     bank: "FED BUSINESS",     acct: "XXXXXX5510", ifsc: "FDRL0001234", type: "Current", added: "2025-07-01", lastTransfer: "2026-06-03", status: "Active" },
+  { name: "Vikram Reddy",         bank: "Yes Bank",         acct: "XXXXXX2134", ifsc: "YESB0003456", type: "Salary",  added: "2025-07-09", lastTransfer: "2026-04-18", status: "Inactive" },
+  { name: "Initech Solutions",    bank: "IndusInd Bank",    acct: "XXXXXX7765", ifsc: "INDB0007890", type: "Current", added: "2025-07-15", lastTransfer: "2026-05-30", status: "Active" },
+  { name: "Nikita Kapoor",        bank: "HDFC Bank",        acct: "XXXXXX9387", ifsc: "HDFC0009912", type: "Savings", added: "2025-07-21", lastTransfer: "2026-05-12", status: "Active" },
+  { name: "Stark Industries",     bank: "ICICI Bank",       acct: "XXXXXX4421", ifsc: "ICIC0008870", type: "Current", added: "2025-07-28", lastTransfer: "2026-06-02", status: "Active" },
+  { name: "Karan Mehra",          bank: "Punjab National",  acct: "XXXXXX0099", ifsc: "PUNB0123456", type: "Savings", added: "2025-08-02", lastTransfer: "2026-03-30", status: "Inactive" },
 ];
 
 const PAGE_SIZE = 6;
@@ -38,8 +39,28 @@ function Beneficiaries() {
   const [restrict, setRestrict] = useState<string | null>(null);
   const [addOpen, setAddOpen] = useState(false);
   const [page, setPage] = useState(1);
-  const totalPages = Math.ceil(BENS.length / PAGE_SIZE);
-  const visible = useMemo(() => BENS.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE), [page]);
+  const [query, setQuery] = useState("");
+  const [bankFilter, setBankFilter] = useState("All");
+  const [sort, setSort] = useState<"az" | "za" | "recent">("az");
+  const [view, setView] = useState<"cards" | "table">("cards");
+
+  const banks = useMemo(() => ["All", ...Array.from(new Set(BENS.map((b) => b.bank)))], []);
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    let r = BENS.filter((b) =>
+      (!q || b.name.toLowerCase().includes(q) || b.acct.toLowerCase().includes(q) || b.bank.toLowerCase().includes(q)) &&
+      (bankFilter === "All" || b.bank === bankFilter),
+    );
+    if (sort === "az") r = r.slice().sort((a, b) => a.name.localeCompare(b.name));
+    else if (sort === "za") r = r.slice().sort((a, b) => b.name.localeCompare(a.name));
+    else r = r.slice().sort((a, b) => b.lastTransfer.localeCompare(a.lastTransfer));
+    return r;
+  }, [query, bankFilter, sort]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const safePage = Math.min(page, totalPages);
+  const visible = useMemo(() => filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE), [filtered, safePage]);
 
   const blockedAction = (action: string) => () =>
     setRestrict(
@@ -84,7 +105,47 @@ function Beneficiaries() {
         <Stat icon={BarChart3} label="Monthly Transfers" value="42" />
       </div>
 
+      {/* Toolbar: search · filter · sort · view */}
+      <div className="bg-white border rounded-md shadow-sm p-3 flex flex-wrap items-center gap-2">
+        <div className="relative flex-1 min-w-[200px]">
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+          <input
+            value={query}
+            onChange={(e) => { setQuery(e.target.value); setPage(1); }}
+            placeholder="Search beneficiary by name, A/C number or bank"
+            className="w-full pl-9 pr-3 py-2 text-sm border rounded focus:outline-none focus:ring-2 focus:ring-fed-blue"
+          />
+        </div>
+        <label className="flex items-center gap-1.5 text-xs">
+          <Filter size={13} className="text-fed-blue" />
+          <select
+            value={bankFilter}
+            onChange={(e) => { setBankFilter(e.target.value); setPage(1); }}
+            className="border rounded px-2 py-2 text-sm bg-white"
+          >
+            {banks.map((b) => <option key={b}>{b}</option>)}
+          </select>
+        </label>
+        <label className="flex items-center gap-1.5 text-xs">
+          <ArrowUpDown size={13} className="text-fed-blue" />
+          <select
+            value={sort}
+            onChange={(e) => setSort(e.target.value as typeof sort)}
+            className="border rounded px-2 py-2 text-sm bg-white"
+          >
+            <option value="az">Sort A–Z</option>
+            <option value="za">Sort Z–A</option>
+            <option value="recent">Most Recent Transfer</option>
+          </select>
+        </label>
+        <div className="flex border rounded overflow-hidden text-xs">
+          <button onClick={() => setView("cards")} className={`px-3 py-2 ${view === "cards" ? "bg-fed-blue text-white" : "bg-white"}`}>Cards</button>
+          <button onClick={() => setView("table")} className={`px-3 py-2 ${view === "table" ? "bg-fed-blue text-white" : "bg-white"}`}>Table</button>
+        </div>
+      </div>
+
       {/* Beneficiary cards */}
+      {view === "cards" && (
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
         {visible.map((b) => (
           <div key={b.name} className="bg-white border rounded-md shadow-sm overflow-hidden hover:shadow-md transition">
@@ -100,11 +161,12 @@ function Beneficiaries() {
             <div className="p-4 text-sm space-y-1.5">
               <Field k="A/C No." v={b.acct} />
               <Field k="IFSC" v={b.ifsc} />
-              <Field k="Type" v={b.type} />
-              <Field k="Added" v={b.added} />
+              <Field k="A/C Type" v={b.type} />
+              <Field k="Date Added" v={b.added} />
+              <Field k="Last Transfer" v={b.lastTransfer} />
               <div className="flex items-center justify-between pt-1">
                 <span className="text-xs text-muted-foreground">Status</span>
-                <span className="text-xs font-semibold text-emerald-700">Active</span>
+                <StatusBadge status={b.status} />
               </div>
             </div>
             <div className="grid grid-cols-4 border-t text-xs">
@@ -116,11 +178,57 @@ function Beneficiaries() {
           </div>
         ))}
       </div>
+      )}
+
+      {view === "table" && (
+        <div className="bg-white border rounded-md shadow-sm overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-fed-blue text-white">
+                <tr className="text-left">
+                  <th className="px-3 py-2.5 font-semibold">Name</th>
+                  <th className="px-3 py-2.5 font-semibold">Account Number</th>
+                  <th className="px-3 py-2.5 font-semibold">Bank Name</th>
+                  <th className="px-3 py-2.5 font-semibold">A/C Type</th>
+                  <th className="px-3 py-2.5 font-semibold">Date Added</th>
+                  <th className="px-3 py-2.5 font-semibold">Last Transfer</th>
+                  <th className="px-3 py-2.5 font-semibold">Status</th>
+                  <th className="px-3 py-2.5 font-semibold text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {visible.map((b, i) => (
+                  <tr key={b.name} className={`border-t ${i % 2 ? "bg-secondary/40" : ""}`}>
+                    <td className="px-3 py-2.5 font-semibold text-fed-blue">{b.name}</td>
+                    <td className="px-3 py-2.5 font-mono">{b.acct}</td>
+                    <td className="px-3 py-2.5">{b.bank}</td>
+                    <td className="px-3 py-2.5">{b.type}</td>
+                    <td className="px-3 py-2.5">{b.added}</td>
+                    <td className="px-3 py-2.5">{b.lastTransfer}</td>
+                    <td className="px-3 py-2.5"><StatusBadge status={b.status} /></td>
+                    <td className="px-3 py-2.5">
+                      <div className="flex justify-end gap-1">
+                        <button onClick={blockedAction("view")} className="p-1.5 rounded hover:bg-secondary" title="View"><Eye size={14} /></button>
+                        <button onClick={blockedAction("edit")} className="p-1.5 rounded hover:bg-secondary" title="Edit"><Pencil size={14} /></button>
+                        <button onClick={blockedAction("delete")} className="p-1.5 rounded hover:bg-secondary text-destructive" title="Delete"><Trash2 size={14} /></button>
+                        <Link to="/fund-transfer" className="text-xs bg-fed-blue text-white px-2.5 py-1.5 rounded hover:bg-fed-blue-dark font-semibold">Transfer</Link>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+                {visible.length === 0 && (
+                  <tr><td colSpan={8} className="px-3 py-6 text-center text-muted-foreground text-sm">No beneficiaries match your search.</td></tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
       {/* Pagination */}
-      <div className="flex items-center justify-between text-sm">
+      <div className="flex flex-wrap items-center justify-between gap-3 text-sm">
         <div className="text-muted-foreground">
-          Showing {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, BENS.length)} of {BENS.length}
+          Showing {filtered.length === 0 ? 0 : (safePage - 1) * PAGE_SIZE + 1}–{Math.min(safePage * PAGE_SIZE, filtered.length)} of {filtered.length}
         </div>
         <div className="flex gap-1">
           {Array.from({ length: totalPages }).map((_, i) => (
@@ -128,7 +236,7 @@ function Beneficiaries() {
               key={i}
               onClick={() => setPage(i + 1)}
               className={`w-8 h-8 rounded text-xs font-semibold border ${
-                page === i + 1 ? "bg-fed-blue text-white border-fed-blue" : "bg-white hover:bg-secondary"
+                safePage === i + 1 ? "bg-fed-blue text-white border-fed-blue" : "bg-white hover:bg-secondary"
               }`}
             >
               {i + 1}
