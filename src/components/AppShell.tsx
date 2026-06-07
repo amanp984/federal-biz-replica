@@ -8,7 +8,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/lib/auth-store";
 import { FEDERAL_LOGO_HORIZONTAL, FEDERAL_LOGO_FULL } from "@/lib/logos";
-import { LoadingOverlay, usePageLoading } from "./LoadingOverlay";
+import { LoadingOverlay, useRouteLoading } from "./LoadingOverlay";
 
 const NAV = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -34,7 +34,7 @@ export function AppShell() {
   const { user, isAuthenticated, logout, touch } = useAuth();
   const navigate = useNavigate();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const loading = usePageLoading(250);
+  const loading = useRouteLoading(700);
   const [profileOpen, setProfileOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
