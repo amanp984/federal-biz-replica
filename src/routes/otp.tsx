@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { OtpStep } from "@/components/OtpStep";
 import { useAuth, DEMO_USER } from "@/lib/auth-store";
 import { FEDERAL_LOGO_HORIZONTAL } from "@/lib/logos";
+import { consumeOtp } from "@/lib/otp-pool";
 
 export const Route = createFileRoute("/otp")({
   head: () => ({ meta: [{ title: "OTP Verification — FED BUSINESS" }] }),
@@ -30,13 +31,15 @@ function OtpPage() {
         <div className="w-full max-w-md">
           <OtpStep
             seconds={60}
-            onVerify={() => {
+            onVerify={(otp) => {
+              const err = consumeOtp(otp);
+              if (err) return err;
               login({ ...DEMO_USER, userId: pendingUserId ?? DEMO_USER.userId });
               navigate({ to: "/dashboard" });
             }}
           />
           <p className="text-center text-xs text-muted-foreground mt-4">
-            Tip: any 6-digit code is accepted in this demo build.
+            Enter a valid OTP from your approved list to continue.
           </p>
         </div>
       </div>

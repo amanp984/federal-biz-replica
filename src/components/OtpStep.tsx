@@ -9,7 +9,7 @@ export function OtpStep({
   subtitle = "Enter the 6-digit OTP sent to your registered mobile.",
 }: {
   seconds?: number;
-  onVerify: (otp: string) => void;
+  onVerify: (otp: string) => void | string | Promise<void | string>;
   onResend?: () => void;
   title?: string;
   subtitle?: string;
@@ -33,14 +33,19 @@ export function OtpStep({
     if (ch && i < 5) refs.current[i + 1]?.focus();
   };
 
-  const submit = () => {
+  const submit = async () => {
     const otp = digits.join("");
     if (otp.length !== 6) {
-      setErr("Invalid OTP. Please try again.");
+      setErr("The OTP entered is not valid. Kindly enter a valid OTP.");
       return;
     }
     setErr("");
-    onVerify(otp);
+    const result = await onVerify(otp);
+    if (typeof result === "string" && result) {
+      setErr(result);
+      setDigits(Array(6).fill(""));
+      refs.current[0]?.focus();
+    }
   };
 
   return (
