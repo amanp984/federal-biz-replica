@@ -1,12 +1,33 @@
 import { create } from "zustand";
 
+export type TransactionStatus = "success" | "pending" | "failed" | "reversed";
+
+/**
+ * Forward-compatible transaction shape. Optional fields will be populated
+ * once realtime ingestion (e.g. SMS-forwarded data via Supabase) is wired in.
+ */
 export interface Transaction {
   id: string;
-  date: string; // ISO
+  date: string; // ISO datetime
   description: string;
   reference: string;
   debit: number;
   credit: number;
+  // --- Optional fields for future realtime SMS / Supabase ingestion ---
+  utr?: string;
+  referenceNumber?: string;
+  transactionId?: string;
+  amount?: number;
+  type?: "credit" | "debit";
+  senderName?: string;
+  receiverName?: string;
+  upiId?: string;
+  impsReference?: string;
+  transactionDate?: string; // ISO date
+  transactionTime?: string; // HH:mm:ss
+  status?: TransactionStatus;
+  availableBalance?: number;
+  source?: "manual" | "sms" | "api" | "supabase";
 }
 
 interface TxState {
