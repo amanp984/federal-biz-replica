@@ -228,7 +228,14 @@ export function downloadStatementPDF(user: User, txs: Transaction[], periodLabel
     }
     const d = new Date(t.date);
     const dateStr = d.toLocaleDateString("en-GB").replace(/\//g, "-").toUpperCase();
-    const tranType = (t.type || "TFR").toString().slice(0, 4).toUpperCase();
+    const desc = String(t.description || "").toUpperCase();
+    const tranType =
+      /UPI/.test(desc) ? "UPI" :
+      /IMPS/.test(desc) ? "IMPS" :
+      /NEFT|NFT/.test(desc) ? "NEFT" :
+      /RTGS/.test(desc) ? "RTGS" :
+      /ATM/.test(desc) ? "ATM" :
+      /CHRG|CHARGE|FEE/.test(desc) ? "CHRG" : "TFR";
     const tranId = (t.transactionId || t.reference || t.id).toString().slice(0, 12);
     const particulars = String(t.description || "").slice(0, 60);
     const crDr = t.debit ? "Dr" : "Cr";
