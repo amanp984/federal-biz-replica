@@ -14,7 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      bank_transactions: {
+        Row: {
+          account_holder_name: string
+          amount: number
+          beneficiary_account_last_digits: string | null
+          created_at: string
+          id: string
+          payment_mode: string
+          transaction_date: string
+          transaction_type: string
+          utr_number: string
+        }
+        Insert: {
+          account_holder_name: string
+          amount: number
+          beneficiary_account_last_digits?: string | null
+          created_at?: string
+          id?: string
+          payment_mode: string
+          transaction_date: string
+          transaction_type: string
+          utr_number: string
+        }
+        Update: {
+          account_holder_name?: string
+          amount?: number
+          beneficiary_account_last_digits?: string | null
+          created_at?: string
+          id?: string
+          payment_mode?: string
+          transaction_date?: string
+          transaction_type?: string
+          utr_number?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
