@@ -27,6 +27,7 @@ import { Route as AppDepositsRouteImport } from './routes/_app.deposits'
 import { Route as AppDashboardRouteImport } from './routes/_app.dashboard'
 import { Route as AppCardsRouteImport } from './routes/_app.cards'
 import { Route as AppBeneficiariesRouteImport } from './routes/_app.beneficiaries'
+import { Route as AppBankStatementRouteImport } from './routes/_app.bank-statement'
 import { Route as AppAccountsRouteImport } from './routes/_app.accounts'
 import { Route as AppAccountDetailsRouteImport } from './routes/_app.account-details'
 
@@ -119,6 +120,11 @@ const AppBeneficiariesRoute = AppBeneficiariesRouteImport.update({
   path: '/beneficiaries',
   getParentRoute: () => AppRoute,
 } as any)
+const AppBankStatementRoute = AppBankStatementRouteImport.update({
+  id: '/bank-statement',
+  path: '/bank-statement',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppAccountsRoute = AppAccountsRouteImport.update({
   id: '/accounts',
   path: '/accounts',
@@ -135,6 +141,7 @@ export interface FileRoutesByFullPath {
   '/otp': typeof OtpRoute
   '/account-details': typeof AppAccountDetailsRoute
   '/accounts': typeof AppAccountsRoute
+  '/bank-statement': typeof AppBankStatementRoute
   '/beneficiaries': typeof AppBeneficiariesRoute
   '/cards': typeof AppCardsRoute
   '/dashboard': typeof AppDashboardRoute
@@ -156,6 +163,7 @@ export interface FileRoutesByTo {
   '/otp': typeof OtpRoute
   '/account-details': typeof AppAccountDetailsRoute
   '/accounts': typeof AppAccountsRoute
+  '/bank-statement': typeof AppBankStatementRoute
   '/beneficiaries': typeof AppBeneficiariesRoute
   '/cards': typeof AppCardsRoute
   '/dashboard': typeof AppDashboardRoute
@@ -179,6 +187,7 @@ export interface FileRoutesById {
   '/otp': typeof OtpRoute
   '/_app/account-details': typeof AppAccountDetailsRoute
   '/_app/accounts': typeof AppAccountsRoute
+  '/_app/bank-statement': typeof AppBankStatementRoute
   '/_app/beneficiaries': typeof AppBeneficiariesRoute
   '/_app/cards': typeof AppCardsRoute
   '/_app/dashboard': typeof AppDashboardRoute
@@ -202,6 +211,7 @@ export interface FileRouteTypes {
     | '/otp'
     | '/account-details'
     | '/accounts'
+    | '/bank-statement'
     | '/beneficiaries'
     | '/cards'
     | '/dashboard'
@@ -223,6 +233,7 @@ export interface FileRouteTypes {
     | '/otp'
     | '/account-details'
     | '/accounts'
+    | '/bank-statement'
     | '/beneficiaries'
     | '/cards'
     | '/dashboard'
@@ -245,6 +256,7 @@ export interface FileRouteTypes {
     | '/otp'
     | '/_app/account-details'
     | '/_app/accounts'
+    | '/_app/bank-statement'
     | '/_app/beneficiaries'
     | '/_app/cards'
     | '/_app/dashboard'
@@ -396,6 +408,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppBeneficiariesRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/bank-statement': {
+      id: '/_app/bank-statement'
+      path: '/bank-statement'
+      fullPath: '/bank-statement'
+      preLoaderRoute: typeof AppBankStatementRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/accounts': {
       id: '/_app/accounts'
       path: '/accounts'
@@ -416,6 +435,7 @@ declare module '@tanstack/react-router' {
 interface AppRouteChildren {
   AppAccountDetailsRoute: typeof AppAccountDetailsRoute
   AppAccountsRoute: typeof AppAccountsRoute
+  AppBankStatementRoute: typeof AppBankStatementRoute
   AppBeneficiariesRoute: typeof AppBeneficiariesRoute
   AppCardsRoute: typeof AppCardsRoute
   AppDashboardRoute: typeof AppDashboardRoute
@@ -436,6 +456,7 @@ interface AppRouteChildren {
 const AppRouteChildren: AppRouteChildren = {
   AppAccountDetailsRoute: AppAccountDetailsRoute,
   AppAccountsRoute: AppAccountsRoute,
+  AppBankStatementRoute: AppBankStatementRoute,
   AppBeneficiariesRoute: AppBeneficiariesRoute,
   AppCardsRoute: AppCardsRoute,
   AppDashboardRoute: AppDashboardRoute,
@@ -463,13 +484,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
