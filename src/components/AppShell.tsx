@@ -24,6 +24,7 @@ const NAV = [
   { to: "/insurance", label: "Insurance", icon: ShieldCheck },
   { to: "/government-schemes", label: "Government Schemes", icon: Building2 },
   { to: "/statements", label: "Statements", icon: FileText },
+  { to: "/bank-statement", label: "Bank Statement", icon: FileText },
   { to: "/settings", label: "Settings", icon: Settings },
   { to: "/support", label: "Support", icon: HelpCircle },
 ] as const;
