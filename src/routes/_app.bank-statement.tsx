@@ -27,7 +27,7 @@ function BankStatement() {
 
   useEffect(() => {
     let active = true;
-    (async () => {
+    const load = async () => {
       const { data, error } = await supabase
         .from("bank_transactions")
         .select(
@@ -39,9 +39,21 @@ function BankStatement() {
       if (error) setError(error.message);
       else setRows((data ?? []) as BankTxn[]);
       setLoading(false);
-    })();
+    };
+    load();
+
+    const channel = supabase
+      .channel("bank_transactions_changes")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "bank_transactions" },
+        () => load(),
+      )
+      .subscribe();
+
     return () => {
       active = false;
+      supabase.removeChannel(channel);
     };
   }, []);
 
