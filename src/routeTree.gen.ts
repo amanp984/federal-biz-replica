@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as OtpRouteImport } from './routes/otp'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AppWebhookDocsRouteImport } from './routes/_app.webhook-docs'
 import { Route as AppTransactionsRouteImport } from './routes/_app.transactions'
 import { Route as AppSupportRouteImport } from './routes/_app.support'
 import { Route as AppStatementsRouteImport } from './routes/_app.statements'
@@ -45,6 +46,11 @@ const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AppWebhookDocsRoute = AppWebhookDocsRouteImport.update({
+  id: '/webhook-docs',
+  path: '/webhook-docs',
+  getParentRoute: () => AppRoute,
 } as any)
 const AppTransactionsRoute = AppTransactionsRouteImport.update({
   id: '/transactions',
@@ -163,6 +169,7 @@ export interface FileRoutesByFullPath {
   '/statements': typeof AppStatementsRoute
   '/support': typeof AppSupportRoute
   '/transactions': typeof AppTransactionsRoute
+  '/webhook-docs': typeof AppWebhookDocsRoute
   '/api/public/sms-webhook': typeof ApiPublicSmsWebhookRoute
 }
 export interface FileRoutesByTo {
@@ -186,6 +193,7 @@ export interface FileRoutesByTo {
   '/statements': typeof AppStatementsRoute
   '/support': typeof AppSupportRoute
   '/transactions': typeof AppTransactionsRoute
+  '/webhook-docs': typeof AppWebhookDocsRoute
   '/api/public/sms-webhook': typeof ApiPublicSmsWebhookRoute
 }
 export interface FileRoutesById {
@@ -211,6 +219,7 @@ export interface FileRoutesById {
   '/_app/statements': typeof AppStatementsRoute
   '/_app/support': typeof AppSupportRoute
   '/_app/transactions': typeof AppTransactionsRoute
+  '/_app/webhook-docs': typeof AppWebhookDocsRoute
   '/api/public/sms-webhook': typeof ApiPublicSmsWebhookRoute
 }
 export interface FileRouteTypes {
@@ -236,6 +245,7 @@ export interface FileRouteTypes {
     | '/statements'
     | '/support'
     | '/transactions'
+    | '/webhook-docs'
     | '/api/public/sms-webhook'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -259,6 +269,7 @@ export interface FileRouteTypes {
     | '/statements'
     | '/support'
     | '/transactions'
+    | '/webhook-docs'
     | '/api/public/sms-webhook'
   id:
     | '__root__'
@@ -283,6 +294,7 @@ export interface FileRouteTypes {
     | '/_app/statements'
     | '/_app/support'
     | '/_app/transactions'
+    | '/_app/webhook-docs'
     | '/api/public/sms-webhook'
   fileRoutesById: FileRoutesById
 }
@@ -315,6 +327,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_app/webhook-docs': {
+      id: '/_app/webhook-docs'
+      path: '/webhook-docs'
+      fullPath: '/webhook-docs'
+      preLoaderRoute: typeof AppWebhookDocsRouteImport
+      parentRoute: typeof AppRoute
     }
     '/_app/transactions': {
       id: '/_app/transactions'
@@ -471,6 +490,7 @@ interface AppRouteChildren {
   AppStatementsRoute: typeof AppStatementsRoute
   AppSupportRoute: typeof AppSupportRoute
   AppTransactionsRoute: typeof AppTransactionsRoute
+  AppWebhookDocsRoute: typeof AppWebhookDocsRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
@@ -492,6 +512,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppStatementsRoute: AppStatementsRoute,
   AppSupportRoute: AppSupportRoute,
   AppTransactionsRoute: AppTransactionsRoute,
+  AppWebhookDocsRoute: AppWebhookDocsRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
