@@ -1,8 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { PageHeader } from "@/components/PageHeader";
-import { supabase } from "@/integrations/supabase/client";
 import { formatINR } from "@/lib/transactions-store";
+import { listBankTransactions } from "@/lib/bank-transactions.functions";
 
 interface BankTxn {
   id: string;
@@ -28,32 +28,23 @@ function BankStatement() {
   useEffect(() => {
     let active = true;
     const load = async () => {
-      const { data, error } = await supabase
-        .from("bank_transactions")
-        .select(
-          "id, transaction_date, transaction_type, payment_mode, account_holder_name, utr_number, beneficiary_account_last_digits, amount",
-        )
-        .order("transaction_date", { ascending: false })
-        .order("created_at", { ascending: false });
-      if (!active) return;
-      if (error) setError(error.message);
-      else setRows((data ?? []) as BankTxn[]);
-      setLoading(false);
+      try {
+        const data = await listBankTransactions();
+        if (!active) return;
+        setRows((data ?? []) as BankTxn[]);
+        setError(null);
+      } catch (e) {
+        if (!active) return;
+        setError(e instanceof Error ? e.message : "Failed to load transactions");
+      } finally {
+        if (active) setLoading(false);
+      }
     };
     load();
-
-    const channel = supabase
-      .channel("bank_transactions_changes")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "bank_transactions" },
-        () => load(),
-      )
-      .subscribe();
-
+    const interval = setInterval(load, 15000);
     return () => {
       active = false;
-      supabase.removeChannel(channel);
+      clearInterval(interval);
     };
   }, []);
 
