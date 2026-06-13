@@ -1,10 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Eye, EyeOff, Download, ChevronRight, ChevronLeft, ArrowLeftRight, Receipt, Smartphone, CreditCard } from "lucide-react";
 import { PageHeader } from "@/components/PageHeader";
 import { useAuth } from "@/lib/auth-store";
-import { computeBalance, formatINR, useTransactions, withRunningBalance } from "@/lib/transactions-store";
+import { formatINR, type Transaction } from "@/lib/transactions-store";
 import { downloadStatementPDF } from "@/lib/pdf";
+import { listBankTransactions, type BankTxnDTO } from "@/lib/bank-transactions.functions";
 
 export const Route = createFileRoute("/_app/dashboard")({
   head: () => ({ meta: [{ title: "Dashboard — FED BUSINESS" }] }),
@@ -13,10 +14,49 @@ export const Route = createFileRoute("/_app/dashboard")({
 
 function Dashboard() {
   const { user } = useAuth();
-  const { transactions } = useTransactions();
-  const balance = useMemo(() => computeBalance(transactions), [transactions]);
+  const [rows, setRows] = useState<BankTxnDTO[]>([]);
+  useEffect(() => {
+    let active = true;
+    const load = () =>
+      listBankTransactions()
+        .then((d) => { if (active) setRows(d ?? []); })
+        .catch(() => {});
+    load();
+    const i = setInterval(load, 15000);
+    return () => { active = false; clearInterval(i); };
+  }, []);
+  const balance = useMemo(
+    () =>
+      rows.reduce(
+        (b, r) => b + (r.transaction_type === "CREDIT" ? Number(r.amount) : -Number(r.amount)),
+        0,
+      ),
+    [rows],
+  );
+  const transactions = useMemo<Transaction[]>(
+    () =>
+      rows.map((r) => ({
+        id: r.id,
+        date: r.transaction_date,
+        description: `${r.transaction_type} ${r.payment_mode} — ${r.account_holder_name}`,
+        reference: r.utr_number,
+        debit: r.transaction_type === "DEBIT" ? Number(r.amount) : 0,
+        credit: r.transaction_type === "CREDIT" ? Number(r.amount) : 0,
+      })),
+    [rows],
+  );
   const [showBal, setShowBal] = useState(true);
-  const recent = useMemo(() => withRunningBalance(transactions).slice(0, 5), [transactions]);
+  const recent = useMemo(() => {
+    const sorted = [...transactions].sort(
+      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
+    );
+    let bal = 0;
+    const withBal = sorted.map((t) => {
+      bal += (t.credit || 0) - (t.debit || 0);
+      return { ...t, balance: bal };
+    });
+    return withBal.reverse().slice(0, 5);
+  }, [transactions]);
 
   if (!user) return null;
 
