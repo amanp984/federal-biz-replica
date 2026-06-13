@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SecurityRouteImport } from './routes/security'
 import { Route as OtpRouteImport } from './routes/otp'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
@@ -33,6 +34,11 @@ import { Route as AppAccountsRouteImport } from './routes/_app.accounts'
 import { Route as AppAccountDetailsRouteImport } from './routes/_app.account-details'
 import { Route as ApiPublicSmsWebhookRouteImport } from './routes/api/public/sms-webhook'
 
+const SecurityRoute = SecurityRouteImport.update({
+  id: '/security',
+  path: '/security',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const OtpRoute = OtpRouteImport.update({
   id: '/otp',
   path: '/otp',
@@ -151,6 +157,7 @@ const ApiPublicSmsWebhookRoute = ApiPublicSmsWebhookRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/otp': typeof OtpRoute
+  '/security': typeof SecurityRoute
   '/account-details': typeof AppAccountDetailsRoute
   '/accounts': typeof AppAccountsRoute
   '/bank-statement': typeof AppBankStatementRoute
@@ -175,6 +182,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/otp': typeof OtpRoute
+  '/security': typeof SecurityRoute
   '/account-details': typeof AppAccountDetailsRoute
   '/accounts': typeof AppAccountsRoute
   '/bank-statement': typeof AppBankStatementRoute
@@ -201,6 +209,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_app': typeof AppRouteWithChildren
   '/otp': typeof OtpRoute
+  '/security': typeof SecurityRoute
   '/_app/account-details': typeof AppAccountDetailsRoute
   '/_app/accounts': typeof AppAccountsRoute
   '/_app/bank-statement': typeof AppBankStatementRoute
@@ -227,6 +236,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/otp'
+    | '/security'
     | '/account-details'
     | '/accounts'
     | '/bank-statement'
@@ -251,6 +261,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/otp'
+    | '/security'
     | '/account-details'
     | '/accounts'
     | '/bank-statement'
@@ -276,6 +287,7 @@ export interface FileRouteTypes {
     | '/'
     | '/_app'
     | '/otp'
+    | '/security'
     | '/_app/account-details'
     | '/_app/accounts'
     | '/_app/bank-statement'
@@ -302,11 +314,19 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppRoute: typeof AppRouteWithChildren
   OtpRoute: typeof OtpRoute
+  SecurityRoute: typeof SecurityRoute
   ApiPublicSmsWebhookRoute: typeof ApiPublicSmsWebhookRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/security': {
+      id: '/security'
+      path: '/security'
+      fullPath: '/security'
+      preLoaderRoute: typeof SecurityRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/otp': {
       id: '/otp'
       path: '/otp'
@@ -521,6 +541,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRoute: AppRouteWithChildren,
   OtpRoute: OtpRoute,
+  SecurityRoute: SecurityRoute,
   ApiPublicSmsWebhookRoute: ApiPublicSmsWebhookRoute,
 }
 export const routeTree = rootRouteImport
