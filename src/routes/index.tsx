@@ -153,10 +153,10 @@ function LoginPage() {
           </div>
 
           <div className="bg-white border rounded-md p-5 text-sm grid grid-cols-2 gap-2">
-            <InfoLink>Security Information</InfoLink>
-            <InfoLink>Terms & Conditions</InfoLink>
-            <InfoLink>Privacy Policy</InfoLink>
-            <InfoLink>Disclaimer</InfoLink>
+            <InfoLink to="/security">Security Information</InfoLink>
+            <InfoLink to="/terms">Terms & Conditions</InfoLink>
+            <InfoLink to="/privacy">Privacy Policy</InfoLink>
+            <InfoLink to="/disclaimer">Disclaimer</InfoLink>
           </div>
         </div>
 
@@ -236,6 +236,15 @@ function LoginPage() {
               </button>
             </div>
 
+            <div className="text-center pt-1">
+              <Link
+                to="/forgot-password"
+                className="text-sm text-fed-blue hover:underline font-medium"
+              >
+                Forgot Password?
+              </Link>
+            </div>
+
             <div className="text-xs text-muted-foreground pt-2 text-center border-t mt-3">
               Powered by <span className="font-semibold text-fed-blue">FED BUSINESS</span>
             </div>
@@ -257,9 +266,9 @@ function UtilLink({ icon: Icon, label }: { icon: React.ComponentType<{ size?: nu
     </button>
   );
 }
-function InfoLink({ children }: { children: React.ReactNode }) {
+function InfoLink({ to, children }: { to: string; children: React.ReactNode }) {
   return (
-    <Link to="/" className="text-fed-blue hover:underline">
+    <Link to={to as never} className="text-fed-blue hover:underline">
       {children}
     </Link>
   );
