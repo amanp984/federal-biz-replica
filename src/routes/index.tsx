@@ -3,8 +3,15 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Eye, EyeOff, Phone, Calculator, HelpCircle, MoreHorizontal, Globe, RefreshCw } from "lucide-react";
 import { FEDERAL_LOGO_FULL, FEDERAL_LOGO_HORIZONTAL } from "@/lib/logos";
-import { useAuth, DEMO_CREDENTIALS } from "@/lib/auth-store";
+import { useAuth } from "@/lib/auth-store";
 import { LoadingOverlay } from "@/components/LoadingOverlay";
+import fdBanner from "@/assets/banners/fd.asset.json";
+import carBanner from "@/assets/banners/car.asset.json";
+import personalBanner from "@/assets/banners/personal.asset.json";
+import businessBanner from "@/assets/banners/business.asset.json";
+import creditBanner from "@/assets/banners/credit.asset.json";
+import insuranceBanner from "@/assets/banners/insurance.asset.json";
+import investmentBanner from "@/assets/banners/investment.asset.json";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -18,15 +25,18 @@ export const Route = createFileRoute("/")({
   component: LoginPage,
 });
 
-const CATEGORIES = [
-  { title: "Personal Loan", desc: "Quick loans at competitive rates", color: "from-blue-500 to-blue-700" },
-  { title: "Home Loan", desc: "Make your dream home a reality", color: "from-emerald-500 to-emerald-700" },
-  { title: "Car Loan", desc: "Drive home your new car today", color: "from-orange-500 to-orange-700" },
-  { title: "Credit Card", desc: "Exclusive rewards for FED BUSINESS users", color: "from-purple-500 to-purple-700" },
-  { title: "Insurance", desc: "Protect what matters most", color: "from-rose-500 to-rose-700" },
-  { title: "Investments", desc: "Grow wealth with smart options", color: "from-amber-500 to-amber-700" },
-  { title: "FD Offers", desc: "Special rates on fixed deposits", color: "from-teal-500 to-teal-700" },
+const BANNERS = [
+  { key: "fd", url: fdBanner.url, alt: "FD Offer — Secure Today, Enjoy Tomorrow" },
+  { key: "car", url: carBanner.url, alt: "Car Loan — Drive Your Dream" },
+  { key: "personal", url: personalBanner.url, alt: "Personal Loan — Funds for Every Need" },
+  { key: "business", url: businessBanner.url, alt: "Business Loan — Power Your Business" },
+  { key: "credit", url: creditBanner.url, alt: "Credit Card — More Rewards. More Benefits." },
+  { key: "insurance", url: insuranceBanner.url, alt: "Insurance — Protect What Matters Most" },
+  { key: "investment", url: investmentBanner.url, alt: "Investment — Invest Today, Secure Tomorrow" },
 ];
+
+const VALID_USER_ID = "Ram825520";
+const VALID_PASSWORD = "Guru@1999";
 
 function LoginPage() {
   const navigate = useNavigate();
@@ -49,21 +59,25 @@ function LoginPage() {
   }, []);
 
   useEffect(() => {
-    const t = setInterval(() => setSlide((s) => (s + 1) % CATEGORIES.length), 3000);
+    const t = setInterval(() => setSlide((s) => (s + 1) % BANNERS.length), 4000);
     return () => clearInterval(t);
   }, []);
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!userId || !password) return setErr("Please enter User ID and Password.");
-    if (captcha.trim().toUpperCase() !== captchaCode) {
+    const credsOk = userId === VALID_USER_ID && password === VALID_PASSWORD;
+    const captchaOk = captcha.trim().toUpperCase() === captchaCode;
+    if (!credsOk && !captchaOk) {
       setCaptchaCode(genCaptcha()); setCaptcha("");
-      return setErr("Captcha does not match.");
+      return setErr("Incorrect User ID/Password and Captcha");
     }
-    // Demo creds gate
-    if (userId.toLowerCase() !== DEMO_CREDENTIALS.userId || password !== DEMO_CREDENTIALS.password) {
-      return setErr(`Invalid credentials. Demo: ${DEMO_CREDENTIALS.userId} / ${DEMO_CREDENTIALS.password}`);
+    if (!credsOk) return setErr("Incorrect User ID or Password");
+    if (!captchaOk) {
+      setCaptchaCode(genCaptcha()); setCaptcha("");
+      return setErr("Incorrect Captcha");
     }
+    setErr("");
     setPending(userId);
     setLoading(true);
     window.setTimeout(() => {
@@ -109,26 +123,30 @@ function LoginPage() {
             </p>
           </div>
 
-          {/* Ad carousel */}
-          <div className="relative h-56 rounded-md overflow-hidden shadow border">
-            {CATEGORIES.map((c, i) => (
-              <div
-                key={c.title}
-                className={`absolute inset-0 transition-opacity duration-700 bg-gradient-to-br ${c.color} text-white p-8 flex flex-col justify-end ${
+          {/* Promotional banner carousel */}
+          <div className="relative w-full aspect-[832/310] rounded-md overflow-hidden shadow border bg-fed-blue/5">
+            {BANNERS.map((b, i) => (
+              <img
+                key={b.key}
+                src={b.url}
+                alt={b.alt}
+                loading={i === 0 ? "eager" : "lazy"}
+                decoding="async"
+                className={`absolute inset-0 w-full h-full object-cover object-center transition-opacity duration-700 ease-in-out ${
                   i === slide ? "opacity-100" : "opacity-0"
                 }`}
-              >
-                <div className="text-xs uppercase tracking-widest opacity-80">Featured</div>
-                <div className="text-2xl font-bold">{c.title}</div>
-                <div className="text-sm opacity-90 mt-1">{c.desc}</div>
-              </div>
+              />
             ))}
-            <div className="absolute bottom-3 right-4 flex gap-1.5 z-10">
-              {CATEGORIES.map((_, i) => (
+            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-2 z-10 bg-black/30 backdrop-blur-sm rounded-full px-3 py-1.5">
+              {BANNERS.map((b, i) => (
                 <button
-                  key={i}
+                  key={b.key}
+                  type="button"
+                  aria-label={`Show banner ${i + 1}`}
                   onClick={() => setSlide(i)}
-                  className={`w-2 h-2 rounded-full ${i === slide ? "bg-white" : "bg-white/40"}`}
+                  className={`h-2 rounded-full transition-all ${
+                    i === slide ? "w-6 bg-white" : "w-2 bg-white/50 hover:bg-white/80"
+                  }`}
                 />
               ))}
             </div>
