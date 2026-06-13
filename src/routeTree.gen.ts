@@ -9,7 +9,9 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TermsRouteImport } from './routes/terms'
 import { Route as SecurityRouteImport } from './routes/security'
+import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as OtpRouteImport } from './routes/otp'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
@@ -34,9 +36,19 @@ import { Route as AppAccountsRouteImport } from './routes/_app.accounts'
 import { Route as AppAccountDetailsRouteImport } from './routes/_app.account-details'
 import { Route as ApiPublicSmsWebhookRouteImport } from './routes/api/public/sms-webhook'
 
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SecurityRoute = SecurityRouteImport.update({
   id: '/security',
   path: '/security',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
   getParentRoute: () => rootRouteImport,
 } as any)
 const OtpRoute = OtpRouteImport.update({
@@ -157,7 +169,9 @@ const ApiPublicSmsWebhookRoute = ApiPublicSmsWebhookRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/otp': typeof OtpRoute
+  '/privacy': typeof PrivacyRoute
   '/security': typeof SecurityRoute
+  '/terms': typeof TermsRoute
   '/account-details': typeof AppAccountDetailsRoute
   '/accounts': typeof AppAccountsRoute
   '/bank-statement': typeof AppBankStatementRoute
@@ -182,7 +196,9 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/otp': typeof OtpRoute
+  '/privacy': typeof PrivacyRoute
   '/security': typeof SecurityRoute
+  '/terms': typeof TermsRoute
   '/account-details': typeof AppAccountDetailsRoute
   '/accounts': typeof AppAccountsRoute
   '/bank-statement': typeof AppBankStatementRoute
@@ -209,7 +225,9 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_app': typeof AppRouteWithChildren
   '/otp': typeof OtpRoute
+  '/privacy': typeof PrivacyRoute
   '/security': typeof SecurityRoute
+  '/terms': typeof TermsRoute
   '/_app/account-details': typeof AppAccountDetailsRoute
   '/_app/accounts': typeof AppAccountsRoute
   '/_app/bank-statement': typeof AppBankStatementRoute
@@ -236,7 +254,9 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/otp'
+    | '/privacy'
     | '/security'
+    | '/terms'
     | '/account-details'
     | '/accounts'
     | '/bank-statement'
@@ -261,7 +281,9 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/otp'
+    | '/privacy'
     | '/security'
+    | '/terms'
     | '/account-details'
     | '/accounts'
     | '/bank-statement'
@@ -287,7 +309,9 @@ export interface FileRouteTypes {
     | '/'
     | '/_app'
     | '/otp'
+    | '/privacy'
     | '/security'
+    | '/terms'
     | '/_app/account-details'
     | '/_app/accounts'
     | '/_app/bank-statement'
@@ -314,17 +338,33 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppRoute: typeof AppRouteWithChildren
   OtpRoute: typeof OtpRoute
+  PrivacyRoute: typeof PrivacyRoute
   SecurityRoute: typeof SecurityRoute
+  TermsRoute: typeof TermsRoute
   ApiPublicSmsWebhookRoute: typeof ApiPublicSmsWebhookRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/security': {
       id: '/security'
       path: '/security'
       fullPath: '/security'
       preLoaderRoute: typeof SecurityRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/otp': {
@@ -541,9 +581,21 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRoute: AppRouteWithChildren,
   OtpRoute: OtpRoute,
+  PrivacyRoute: PrivacyRoute,
   SecurityRoute: SecurityRoute,
+  TermsRoute: TermsRoute,
   ApiPublicSmsWebhookRoute: ApiPublicSmsWebhookRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
