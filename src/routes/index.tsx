@@ -3,7 +3,7 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Eye, EyeOff, Phone, Calculator, HelpCircle, MoreHorizontal, Globe, RefreshCw } from "lucide-react";
 import { FEDERAL_LOGO_FULL, FEDERAL_LOGO_HORIZONTAL } from "@/lib/logos";
-import { useAuth, DEMO_CREDENTIALS } from "@/lib/auth-store";
+import { useAuth } from "@/lib/auth-store";
 import { LoadingOverlay } from "@/components/LoadingOverlay";
 import fdBanner from "@/assets/banners/fd.asset.json";
 import carBanner from "@/assets/banners/car.asset.json";
