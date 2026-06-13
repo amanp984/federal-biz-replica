@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX IF NOT EXISTS bank_transactions_utr_unique ON public.bank_transactions (utr_number);
