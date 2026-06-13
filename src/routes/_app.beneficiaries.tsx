@@ -42,7 +42,6 @@ function Beneficiaries() {
   const [query, setQuery] = useState("");
   const [bankFilter, setBankFilter] = useState("All");
   const [sort, setSort] = useState<"az" | "za" | "recent">("az");
-  const [view, setView] = useState<"cards" | "table">("cards");
 
   const banks = useMemo(() => ["All", ...Array.from(new Set(BENS.map((b) => b.bank)))], []);
 
@@ -138,61 +137,20 @@ function Beneficiaries() {
             <option value="recent">Most Recent Transfer</option>
           </select>
         </label>
-        <div className="flex border rounded overflow-hidden text-xs">
-          <button onClick={() => setView("cards")} className={`px-3 py-2 ${view === "cards" ? "bg-fed-blue text-white" : "bg-white"}`}>Cards</button>
-          <button onClick={() => setView("table")} className={`px-3 py-2 ${view === "table" ? "bg-fed-blue text-white" : "bg-white"}`}>Table</button>
-        </div>
       </div>
 
-      {/* Beneficiary cards */}
-      {view === "cards" && (
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {visible.map((b) => (
-          <div key={b.name} className="bg-white border rounded-md shadow-sm overflow-hidden hover:shadow-md transition">
-            <div className="bg-fed-blue text-white p-4 border-b-4 border-fed-orange flex items-center gap-3">
-              <div className="w-10 h-10 grid place-items-center rounded-full bg-white/15">
-                <Users size={18} />
-              </div>
-              <div className="min-w-0">
-                <div className="font-bold truncate">{b.name}</div>
-                <div className="text-xs opacity-85 truncate">{b.bank}</div>
-              </div>
-            </div>
-            <div className="p-4 text-sm space-y-1.5">
-              <Field k="A/C No." v={b.acct} />
-              <Field k="IFSC" v={b.ifsc} />
-              <Field k="A/C Type" v={b.type} />
-              <Field k="Date Added" v={b.added} />
-              <Field k="Last Transfer" v={b.lastTransfer} />
-              <div className="flex items-center justify-between pt-1">
-                <span className="text-xs text-muted-foreground">Status</span>
-                <StatusBadge status={b.status} />
-              </div>
-            </div>
-            <div className="grid grid-cols-4 border-t text-xs">
-              <button onClick={blockedAction("view")} title="View" className="py-2 hover:bg-secondary flex items-center justify-center gap-1"><Eye size={13} /></button>
-              <button onClick={blockedAction("edit")} title="Edit" className="py-2 hover:bg-secondary flex items-center justify-center gap-1"><Pencil size={13} /></button>
-              <button onClick={blockedAction("delete")} title="Delete" className="py-2 hover:bg-secondary flex items-center justify-center gap-1 text-destructive"><Trash2 size={13} /></button>
-              <Link to="/fund-transfer" className="py-2 bg-fed-blue text-white hover:bg-fed-blue-dark text-center font-semibold">Transfer</Link>
-            </div>
-          </div>
-        ))}
-      </div>
-      )}
-
-      {view === "table" && (
+      {(
         <div className="bg-white border rounded-md shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="bg-fed-blue text-white">
                 <tr className="text-left">
-                  <th className="px-3 py-2.5 font-semibold">Name</th>
-                  <th className="px-3 py-2.5 font-semibold">Account Number</th>
+                  <th className="px-3 py-2.5 font-semibold">Beneficiary Name</th>
                   <th className="px-3 py-2.5 font-semibold">Bank Name</th>
-                  <th className="px-3 py-2.5 font-semibold">A/C Type</th>
-                  <th className="px-3 py-2.5 font-semibold">Date Added</th>
-                  <th className="px-3 py-2.5 font-semibold">Last Transfer</th>
+                  <th className="px-3 py-2.5 font-semibold">Account Number</th>
+                  <th className="px-3 py-2.5 font-semibold">IFSC</th>
                   <th className="px-3 py-2.5 font-semibold">Status</th>
+                  <th className="px-3 py-2.5 font-semibold">Last Transfer</th>
                   <th className="px-3 py-2.5 font-semibold text-right">Actions</th>
                 </tr>
               </thead>
@@ -200,12 +158,11 @@ function Beneficiaries() {
                 {visible.map((b, i) => (
                   <tr key={b.name} className={`border-t ${i % 2 ? "bg-secondary/40" : ""}`}>
                     <td className="px-3 py-2.5 font-semibold text-fed-blue">{b.name}</td>
-                    <td className="px-3 py-2.5 font-mono">{b.acct}</td>
                     <td className="px-3 py-2.5">{b.bank}</td>
-                    <td className="px-3 py-2.5">{b.type}</td>
-                    <td className="px-3 py-2.5">{b.added}</td>
-                    <td className="px-3 py-2.5">{b.lastTransfer}</td>
+                    <td className="px-3 py-2.5 font-mono">{b.acct}</td>
+                    <td className="px-3 py-2.5 font-mono text-xs">{b.ifsc}</td>
                     <td className="px-3 py-2.5"><StatusBadge status={b.status} /></td>
+                    <td className="px-3 py-2.5">{b.lastTransfer}</td>
                     <td className="px-3 py-2.5">
                       <div className="flex justify-end gap-1">
                         <button onClick={blockedAction("view")} className="p-1.5 rounded hover:bg-secondary" title="View"><Eye size={14} /></button>
@@ -217,7 +174,7 @@ function Beneficiaries() {
                   </tr>
                 ))}
                 {visible.length === 0 && (
-                  <tr><td colSpan={8} className="px-3 py-6 text-center text-muted-foreground text-sm">No beneficiaries match your search.</td></tr>
+                  <tr><td colSpan={7} className="px-3 py-6 text-center text-muted-foreground text-sm">No beneficiaries match your search.</td></tr>
                 )}
               </tbody>
             </table>

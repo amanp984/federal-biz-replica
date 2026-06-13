@@ -1,11 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Eye, EyeOff, Download, ChevronRight, ChevronLeft, ArrowLeftRight, Receipt, Smartphone, CreditCard } from "lucide-react";
 import { PageHeader } from "@/components/PageHeader";
 import { useAuth } from "@/lib/auth-store";
-import { formatINR, type Transaction } from "@/lib/transactions-store";
+import { formatINR } from "@/lib/transactions-store";
 import { downloadStatementPDF } from "@/lib/pdf";
-import { listBankTransactions, type BankTxnDTO } from "@/lib/bank-transactions.functions";
+import { useBankTransactions } from "@/lib/use-bank-transactions";
 
 export const Route = createFileRoute("/_app/dashboard")({
   head: () => ({ meta: [{ title: "Dashboard — FED BUSINESS" }] }),
@@ -14,37 +14,7 @@ export const Route = createFileRoute("/_app/dashboard")({
 
 function Dashboard() {
   const { user } = useAuth();
-  const [rows, setRows] = useState<BankTxnDTO[]>([]);
-  useEffect(() => {
-    let active = true;
-    const load = () =>
-      listBankTransactions()
-        .then((d) => { if (active) setRows(d ?? []); })
-        .catch(() => {});
-    load();
-    const i = setInterval(load, 15000);
-    return () => { active = false; clearInterval(i); };
-  }, []);
-  const balance = useMemo(
-    () =>
-      rows.reduce(
-        (b, r) => b + (r.transaction_type === "CREDIT" ? Number(r.amount) : -Number(r.amount)),
-        0,
-      ),
-    [rows],
-  );
-  const transactions = useMemo<Transaction[]>(
-    () =>
-      rows.map((r) => ({
-        id: r.id,
-        date: r.transaction_date,
-        description: `${r.transaction_type} ${r.payment_mode} — ${r.account_holder_name}`,
-        reference: r.utr_number,
-        debit: r.transaction_type === "DEBIT" ? Number(r.amount) : 0,
-        credit: r.transaction_type === "CREDIT" ? Number(r.amount) : 0,
-      })),
-    [rows],
-  );
+  const { transactions, balance } = useBankTransactions();
   const [showBal, setShowBal] = useState(true);
   const recent = useMemo(() => {
     const sorted = [...transactions].sort(
@@ -138,7 +108,10 @@ function Dashboard() {
               {recent.map((t) => (
                 <tr key={t.id} className="border-t hover:bg-secondary/50">
                   <td className="p-3">{new Date(t.date).toLocaleDateString("en-IN")}</td>
-                  <td className="p-3">{t.description}</td>
+                  <td className="p-3">
+                    <div>{t.description}</div>
+                    <div className="text-[10px] text-muted-foreground font-mono mt-0.5">{t.transactionId}</div>
+                  </td>
                   <td className="p-3 text-right text-destructive">{t.debit ? formatINR(t.debit) : "—"}</td>
                   <td className="p-3 text-right text-emerald-700">{t.credit ? formatINR(t.credit) : "—"}</td>
                   <td className="p-3 text-right font-semibold">{formatINR(t.balance)}</td>

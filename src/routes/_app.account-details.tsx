@@ -3,9 +3,10 @@ import { useMemo } from "react";
 import { Download } from "lucide-react";
 import { PageHeader } from "@/components/PageHeader";
 import { useAuth } from "@/lib/auth-store";
-import { computeBalance, formatINR, useTransactions, withRunningBalance } from "@/lib/transactions-store";
+import { formatINR, withRunningBalance } from "@/lib/transactions-store";
 import { downloadStatementPDF } from "@/lib/pdf";
 import { FEDERAL_LOGO_FULL } from "@/lib/logos";
+import { useBankTransactions } from "@/lib/use-bank-transactions";
 
 export const Route = createFileRoute("/_app/account-details")({
   head: () => ({ meta: [{ title: "Account Details — FED BUSINESS" }] }),
@@ -14,8 +15,7 @@ export const Route = createFileRoute("/_app/account-details")({
 
 function AccountDetails() {
   const { user } = useAuth();
-  const { transactions } = useTransactions();
-  const balance = useMemo(() => computeBalance(transactions), [transactions]);
+  const { transactions, balance } = useBankTransactions();
   const recent = useMemo(() => withRunningBalance(transactions).slice(0, 10), [transactions]);
   if (!user) return null;
 
@@ -73,7 +73,10 @@ function AccountDetails() {
               {recent.map((t) => (
                 <tr key={t.id} className="border-t">
                   <td className="p-3">{new Date(t.date).toLocaleDateString("en-IN")}</td>
-                  <td className="p-3">{t.description}</td>
+                  <td className="p-3">
+                    <div>{t.description}</div>
+                    <div className="text-[10px] text-muted-foreground font-mono mt-0.5">{t.transactionId}</div>
+                  </td>
                   <td className="p-3 text-right text-destructive">{t.debit ? formatINR(t.debit) : "—"}</td>
                   <td className="p-3 text-right text-emerald-700">{t.credit ? formatINR(t.credit) : "—"}</td>
                   <td className="p-3 text-right font-semibold">{formatINR(t.balance)}</td>

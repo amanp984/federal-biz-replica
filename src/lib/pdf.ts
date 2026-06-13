@@ -1,22 +1,30 @@
 import jsPDF from "jspdf";
 import type { User } from "./auth-store";
-import { type Transaction, withRunningBalance, formatINR } from "./transactions-store";
+import {
+  type Transaction,
+  withRunningBalance,
+  formatINR,
+} from "./transactions-store";
 
 /**
- * Print-ready account statement PDF modelled closely on the reference layout:
- * compact header band, two-column customer info grid, ruled transaction table
- * with Date / Value Date / Particulars / Tran Type / Tran ID / Cheque Details /
- * Withdrawals / Deposits / Balance / DR-CR, opening + closing balance rows,
- * grand total strip, abbreviations + disclaimer, and "Page X of Y" footer.
+ * A4 LANDSCAPE bank-style account statement.
+ * Wide canvas (297mm) eliminates the column-collision issues of the previous
+ * portrait layout. Strict, well-spaced two-column info grid; clean 8-column
+ * ledger; summary band with totals and closing balance.
  */
-export function downloadStatementPDF(user: User, txs: Transaction[], periodLabel?: string) {
-  const doc = new jsPDF({ unit: "mm", format: "a4" });
-  const W = doc.internal.pageSize.getWidth();
-  const H = doc.internal.pageSize.getHeight();
-  const M = 8; // page margin
+export function downloadStatementPDF(
+  user: User,
+  txs: Transaction[],
+  periodLabel?: string,
+) {
+  const doc = new jsPDF({ unit: "mm", format: "a4", orientation: "landscape" });
+  const W = doc.internal.pageSize.getWidth();   // 297
+  const H = doc.internal.pageSize.getHeight();  // 210
+  const M = 10;
+  const innerW = W - 2 * M;
 
-  const running = withRunningBalance(txs);
-  const ordered = running.slice().reverse(); // oldest -> newest
+  const running = withRunningBalance(txs); // newest first w/ balance
+  const ordered = running.slice().reverse(); // oldest -> newest for ledger
   const opening = 0;
   const closing = running[0]?.balance ?? 0;
   const totalDebit = ordered.reduce((s, t) => s + (t.debit || 0), 0);
@@ -29,222 +37,241 @@ export function downloadStatementPDF(user: User, txs: Transaction[], periodLabel
       today.getDate(),
     ).padStart(2, "0")}-${String(today.getMonth() + 1).padStart(2, "0")}-${today.getFullYear()}`;
 
-  // Column layout (mm) — matches reference order
-  const innerW = W - 2 * M;
-  const colW = [20, 18, 56, 14, 22, 22, 22, 22, 22, 12]; // sum ~230 will scale
+  // ---- Layout constants
+  const HEADER_H = 18;
+  const INFO_H = 50;
+  const FOOTER_H = 12;
+  const TABLE_HEAD_H = 8;
+  const ROW_H = 7;
+  const limitY = H - FOOTER_H - 4;
+
+  // ---- Columns (sum to innerW). 8 columns, generous Particulars.
+  const labels = ["Date", "Particulars", "Txn ID", "Type", "Withdrawals", "Deposits", "Balance", "Dr/Cr"];
+  const aligns: ("left" | "right" | "center")[] = [
+    "left", "left", "left", "center", "right", "right", "right", "center",
+  ];
+  const colW = [22, 110, 38, 16, 30, 30, 30, 12]; // 288
   const sum = colW.reduce((a, b) => a + b, 0);
   const scale = innerW / sum;
   const widths = colW.map((w) => w * scale);
-  const labels = ["Date", "Value Date", "Particulars", "Tran Type", "Tran ID", "Cheque Details", "Withdrawals", "Deposits", "Balance", "DR/CR"];
-  const aligns: ("left" | "right" | "center")[] = ["left", "left", "left", "center", "left", "left", "right", "right", "right", "center"];
   const colX: number[] = [];
   { let x = M; for (const w of widths) { colX.push(x); x += w; } }
 
-  const TABLE_TOP_HEADER_H = 8;
-  const ROW_H = 6.2;
-  const TOP_BAND_H = 14;
-  const INFO_BLOCK_H = 56;
-  const FOOTER_H = 10;
-  const HEADER_TOTAL = TOP_BAND_H + 2 + INFO_BLOCK_H + TABLE_TOP_HEADER_H;
-  const limitY = H - FOOTER_H - 4;
-
-  const drawTopBand = () => {
+  // ---- Drawing helpers
+  const drawHeader = () => {
     doc.setFillColor(28, 65, 165);
-    doc.rect(0, 0, W, TOP_BAND_H, "F");
+    doc.rect(0, 0, W, HEADER_H, "F");
     doc.setFillColor(245, 158, 11);
-    doc.rect(0, TOP_BAND_H, W, 1.2, "F");
-    doc.setTextColor(255, 255, 255);
+    doc.rect(0, HEADER_H, W, 1.5, "F");
+
+    doc.setTextColor(255);
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(13);
-    doc.text("FED BUSINESS", M, 9);
+    doc.setFontSize(15);
+    doc.text("FED BUSINESS", M, 10);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8);
+    doc.text("Your Business Banking Partner", M, 15);
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(11);
+    doc.text("Statement of Account", W - M, 9, { align: "right" });
     doc.setFont("helvetica", "normal");
     doc.setFontSize(7.5);
-    doc.text("YOUR BUSINESS BANKING PARTNER", M, 12.5);
-    doc.setFontSize(8);
-    doc.text("Statement of Account", W - M, 7.5, { align: "right" });
-    doc.setFontSize(7);
-    doc.text("support@fedbusiness.com  |  1800-425-0000", W - M, 11.5, { align: "right" });
-    doc.text(`Generated: ${today.toLocaleString("en-IN")}`, W - M, 14.5, { align: "right" });
+    doc.text(`Generated: ${today.toLocaleString("en-IN")}`, W - M, 13.5, { align: "right" });
+    doc.text("support@fedbusiness.com  |  1800-425-0000", W - M, 17, { align: "right" });
   };
 
   const drawInfoBlock = () => {
-    const top = TOP_BAND_H + 3;
-    // Outer border
+    const top = HEADER_H + 4;
     doc.setDrawColor(180);
-    doc.setLineWidth(0.25);
-    doc.rect(M, top, innerW, INFO_BLOCK_H);
-    // Vertical split
-    doc.line(M + innerW / 2, top, M + innerW / 2, top + INFO_BLOCK_H - 7);
-    // Period band at bottom of info block
-    doc.setFillColor(240, 244, 252);
-    doc.rect(M, top + INFO_BLOCK_H - 7, innerW, 7, "F");
-    doc.setDrawColor(180);
-    doc.line(M, top + INFO_BLOCK_H - 7, M + innerW, top + INFO_BLOCK_H - 7);
+    doc.setLineWidth(0.3);
+    doc.rect(M, top, innerW, INFO_H);
 
-    doc.setTextColor(20, 20, 20);
-    doc.setFontSize(8);
-    const left = [
-      ["Name", user.customerName],
-      ["Communication Address", user.address],
-      ["Address Last Updated On", "29/07/2025"],
-      ["Regd. Mobile Number", user.mobile],
-      ["Email ID", user.email],
-      ["Type of Account", `${user.accountType} Account`],
-      ["Scheme", "CA BUSINESS"],
-      ["IFSC", user.ifsc],
-      ["MICR Code", "400007777"],
-      ["SWIFT Code", "FDRLINBBIBD"],
-      ["Effective Available Balance", formatINR(closing)],
-    ];
-    const right = [
-      ["Branch Name", user.branch],
-      ["Branch Sol ID", "1391"],
-      ["", ""],
-      ["Account Number", user.accountNumber],
+    // 2-column split
+    const midX = M + innerW / 2;
+    doc.line(midX, top, midX, top + INFO_H - 8);
+
+    // Period strip (footer band of info block)
+    const stripY = top + INFO_H - 8;
+    doc.setFillColor(240, 244, 252);
+    doc.rect(M, stripY, innerW, 8, "F");
+    doc.line(M, stripY, M + innerW, stripY);
+    doc.setTextColor(28, 65, 165);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(9);
+    doc.text(
+      `Statement Period: ${period}`,
+      M + innerW / 2,
+      stripY + 5.5,
+      { align: "center" },
+    );
+
+    // Field rendering: label column 38mm, value column rest
+    const left: [string, string][] = [
+      ["Account Holder", user.customerName],
       ["Customer ID", user.customerId],
-      ["Account Open Date", "14/03/2025"],
-      ["Account Status", "ACTIVE"],
-      ["Mode of Operation", "SINGLE"],
-      ["Joint Holders", "NIL"],
-      ["Nomination", "NOT REGISTERED"],
+      ["CIF", user.cif],
+      ["Account Number", user.accountNumber],
+      ["Account Type", `${user.accountType} Account`],
+      ["IFSC Code", user.ifsc],
       ["Currency", "INR"],
     ];
-    const rowH = (INFO_BLOCK_H - 7) / left.length;
-    const writeCol = (data: string[][], xLabel: number, xValue: number) => {
+    const right: [string, string][] = [
+      ["Branch", user.branch],
+      ["Branch Address", user.branchAddress],
+      ["Mobile", user.mobile],
+      ["Email", user.email],
+      ["Account Status", "ACTIVE"],
+      ["Mode of Operation", "SINGLE"],
+      ["Effective Available Balance", formatINR(closing)],
+    ];
+
+    const rowH = (INFO_H - 8) / left.length;
+    const writeCol = (data: [string, string][], xLabel: number, xValue: number, maxValueW: number) => {
+      doc.setFontSize(8.5);
       data.forEach(([k, v], i) => {
-        const y = top + (i + 1) * rowH - 1.5;
-        if (!k && !v) return;
-        doc.setFont("helvetica", "bold");
-        doc.text(k, xLabel, y);
+        const y = top + (i + 0.5) * rowH + 2;
+        doc.setTextColor(110);
         doc.setFont("helvetica", "normal");
-        const maxW = innerW / 2 - (xValue - xLabel) - 3;
-        const lines = doc.splitTextToSize(String(v ?? ""), maxW) as string[];
+        doc.text(k, xLabel, y);
+        doc.setTextColor(15);
+        doc.setFont("helvetica", "bold");
+        const lines = doc.splitTextToSize(String(v ?? ""), maxValueW) as string[];
         doc.text(lines[0] ?? "", xValue, y);
       });
     };
-    writeCol(left, M + 2, M + 38);
-    writeCol(right, M + innerW / 2 + 2, M + innerW / 2 + 38);
-
-    // Period strip
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(8.5);
-    doc.setTextColor(28, 65, 165);
-    doc.text(
-      `Statement of Account for the period ${period}`,
-      M + innerW / 2,
-      top + INFO_BLOCK_H - 2.2,
-      { align: "center" },
-    );
+    const colHalfW = innerW / 2;
+    writeCol(left, M + 3, M + 45, colHalfW - 50);
+    writeCol(right, midX + 3, midX + 45, colHalfW - 50);
   };
 
   const drawTableHeader = (y: number) => {
     doc.setFillColor(28, 65, 165);
-    doc.rect(M, y, innerW, TABLE_TOP_HEADER_H, "F");
-    doc.setTextColor(255, 255, 255);
+    doc.rect(M, y, innerW, TABLE_HEAD_H, "F");
+    doc.setTextColor(255);
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(7);
+    doc.setFontSize(8);
     labels.forEach((label, i) => {
-      const x = aligns[i] === "right" ? colX[i] + widths[i] - 1.5
-        : aligns[i] === "center" ? colX[i] + widths[i] / 2
-        : colX[i] + 1.5;
-      doc.text(label, x, y + 5.2, { align: aligns[i] });
+      const x =
+        aligns[i] === "right"
+          ? colX[i] + widths[i] - 2
+          : aligns[i] === "center"
+          ? colX[i] + widths[i] / 2
+          : colX[i] + 2;
+      doc.text(label, x, y + 5.4, { align: aligns[i] });
     });
-    // Column separators (header)
-    doc.setDrawColor(255, 255, 255);
+    doc.setDrawColor(255);
     doc.setLineWidth(0.15);
-    for (let i = 1; i < colX.length; i++) doc.line(colX[i], y, colX[i], y + TABLE_TOP_HEADER_H);
-    doc.setDrawColor(180);
-    doc.setLineWidth(0.25);
-    return y + TABLE_TOP_HEADER_H;
+    for (let i = 1; i < colX.length; i++)
+      doc.line(colX[i], y, colX[i], y + TABLE_HEAD_H);
+    return y + TABLE_HEAD_H;
   };
 
-  const drawFooterBand = () => {
+  const drawFooter = (pageNum: number, pageTotal: number) => {
     const fy = H - FOOTER_H;
     doc.setDrawColor(28, 65, 165);
     doc.setLineWidth(0.4);
     doc.line(M, fy, W - M, fy);
     doc.setTextColor(80);
     doc.setFont("helvetica", "normal");
-    doc.setFontSize(7);
+    doc.setFontSize(7.5);
     doc.text(
-      "FED BUSINESS Corporate Office: Fort Office, Mumbai - 400001  |  Email: support@fedbusiness.com  |  Helpline: 1800-425-0000",
-      W / 2, fy + 4, { align: "center" },
+      "FED BUSINESS  ·  Fort Office, Mumbai - 400001  ·  support@fedbusiness.com  ·  1800-425-0000",
+      W / 2,
+      fy + 4.5,
+      { align: "center" },
     );
-    doc.setFontSize(6.5);
+    doc.setFontSize(6.8);
     doc.setTextColor(120);
-    doc.text("This is a computer-generated statement and does not require a signature.", M, fy + 8);
-    // Page X of Y filled in after all pages rendered
+    doc.text(
+      "This is a computer-generated statement and does not require a signature.",
+      M,
+      fy + 9,
+    );
+    doc.text(`Page ${pageNum} of ${pageTotal}`, W - M, fy + 9, { align: "right" });
   };
 
   const startPage = (first = false) => {
     if (!first) doc.addPage();
-    drawTopBand();
+    drawHeader();
     drawInfoBlock();
-    const tableY = TOP_BAND_H + 3 + INFO_BLOCK_H + 2;
-    drawFooterBand();
+    const tableY = HEADER_H + 4 + INFO_H + 4;
     return drawTableHeader(tableY);
   };
 
-  const drawRowBorders = (y: number) => {
-    doc.setDrawColor(210);
+  const drawRowBorders = (yBottom: number) => {
+    doc.setDrawColor(220);
     doc.setLineWidth(0.15);
-    // bottom line
-    doc.line(M, y, M + innerW, y);
-    // vertical separators
-    for (let i = 1; i < colX.length; i++) doc.line(colX[i], y - ROW_H, colX[i], y);
-    // outer rect
-    doc.line(M, y - ROW_H, M, y);
-    doc.line(M + innerW, y - ROW_H, M + innerW, y);
+    doc.line(M, yBottom, M + innerW, yBottom);
+    for (let i = 1; i < colX.length; i++)
+      doc.line(colX[i], yBottom - ROW_H, colX[i], yBottom);
+    doc.line(M, yBottom - ROW_H, M, yBottom);
+    doc.line(M + innerW, yBottom - ROW_H, M + innerW, yBottom);
+  };
+
+  const writeRow = (
+    cells: string[],
+    y0: number,
+    opts?: { bold?: boolean; bg?: [number, number, number]; fg?: [number, number, number] },
+  ) => {
+    if (opts?.bg) {
+      doc.setFillColor(opts.bg[0], opts.bg[1], opts.bg[2]);
+      doc.rect(M, y0, innerW, ROW_H, "F");
+    }
+    doc.setTextColor(opts?.fg?.[0] ?? 20, opts?.fg?.[1] ?? 20, opts?.fg?.[2] ?? 20);
+    doc.setFont("helvetica", opts?.bold ? "bold" : "normal");
+    doc.setFontSize(8);
+    cells.forEach((c, i) => {
+      const x =
+        aligns[i] === "right"
+          ? colX[i] + widths[i] - 2
+          : aligns[i] === "center"
+          ? colX[i] + widths[i] / 2
+          : colX[i] + 2;
+      const maxW = widths[i] - 4;
+      const text = (doc.splitTextToSize(String(c ?? ""), maxW)[0] ?? "") as string;
+      doc.text(text, x, y0 + 4.8, { align: aligns[i] });
+    });
+    drawRowBorders(y0 + ROW_H);
   };
 
   let y = startPage(true);
 
   // Opening balance row
-  const writeRow = (cells: string[], y0: number, opts?: { bold?: boolean; bg?: [number, number, number] }) => {
-    if (opts?.bg) {
-      doc.setFillColor(...opts.bg);
-      doc.rect(M, y0, innerW, ROW_H, "F");
-    }
-    doc.setTextColor(20, 20, 20);
-    doc.setFont("helvetica", opts?.bold ? "bold" : "normal");
-    doc.setFontSize(7);
-    cells.forEach((c, i) => {
-      const x = aligns[i] === "right" ? colX[i] + widths[i] - 1.5
-        : aligns[i] === "center" ? colX[i] + widths[i] / 2
-        : colX[i] + 1.5;
-      const maxW = widths[i] - 3;
-      const text = doc.splitTextToSize(String(c ?? ""), maxW)[0] ?? "";
-      doc.text(text, x, y0 + 4.2, { align: aligns[i] });
-    });
-    drawRowBorders(y0 + ROW_H);
-  };
-
-  writeRow(["", "", "Opening Balance", "", "", "", "", "", formatINR(opening), "Cr"], y, { bold: true, bg: [248, 250, 253] });
+  writeRow(
+    ["", "Opening Balance", "", "", "", "", formatINR(opening), "Cr"],
+    y,
+    { bold: true, bg: [248, 250, 253] },
+  );
   y += ROW_H;
 
   ordered.forEach((t, i) => {
-    if (y + ROW_H > limitY) {
-      y = startPage(false);
-    }
+    if (y + ROW_H > limitY) y = startPage(false);
     const d = new Date(t.date);
-    const dateStr = d.toLocaleDateString("en-GB").replace(/\//g, "-").toUpperCase();
+    const dateStr = d
+      .toLocaleDateString("en-GB")
+      .replace(/\//g, "-")
+      .toUpperCase();
     const desc = String(t.description || "").toUpperCase();
     const tranType =
-      /UPI/.test(desc) ? "UPI" :
-      /IMPS/.test(desc) ? "IMPS" :
-      /NEFT|NFT/.test(desc) ? "NEFT" :
-      /RTGS/.test(desc) ? "RTGS" :
-      /ATM/.test(desc) ? "ATM" :
-      /CHRG|CHARGE|FEE/.test(desc) ? "CHRG" : "TFR";
-    const tranId = (t.transactionId || t.reference || t.id).toString().slice(0, 12);
-    const particulars = String(t.description || "").slice(0, 60);
+      /UPI/.test(desc) ? "UPI"
+      : /IMPS/.test(desc) ? "IMPS"
+      : /NEFT/.test(desc) ? "NEFT"
+      : /RTGS/.test(desc) ? "RTGS"
+      : /ATM/.test(desc) ? "ATM"
+      : "TFR";
+    const tranId = String(t.transactionId || t.reference || t.id);
     const crDr = t.debit ? "Dr" : "Cr";
     writeRow(
       [
-        dateStr, dateStr, particulars, tranType, tranId, "",
+        dateStr,
+        String(t.description || ""),
+        tranId,
+        tranType,
         t.debit ? formatINR(t.debit) : "",
         t.credit ? formatINR(t.credit) : "",
-        formatINR(t.balance), crDr,
+        formatINR(t.balance),
+        crDr,
       ],
       y,
       i % 2 === 1 ? { bg: [250, 251, 254] } : undefined,
@@ -253,114 +280,121 @@ export function downloadStatementPDF(user: User, txs: Transaction[], periodLabel
   });
 
   if (ordered.length === 0) {
-    doc.setFontSize(8);
-    doc.setTextColor(110);
-    doc.text("No transactions for the selected period.", M + 3, y + 5);
+    doc.setFontSize(9);
+    doc.setTextColor(120);
+    doc.text("No transactions for the selected period.", M + 4, y + 6);
     y += ROW_H;
   }
 
-  // GRAND TOTAL — needs 3 rows + abbreviations + disclaimer + end mark
-  const TAIL_H = 6 + 6 + 18 + 18 + 8;
+  // Tail (closing + grand total + summary + disclaimer + end mark)
+  const TAIL_H = ROW_H * 2 + 30 + 18 + 12;
   if (y + TAIL_H > limitY) y = startPage(false);
 
   // Closing balance row
-  writeRow(["", "", "Closing Balance", "", "", "", "", "", formatINR(closing), closing < 0 ? "Dr" : "Cr"], y, { bold: true, bg: [240, 244, 252] });
+  writeRow(
+    ["", "Closing Balance", "", "", "", "", formatINR(closing), closing < 0 ? "Dr" : "Cr"],
+    y,
+    { bold: true, bg: [240, 244, 252] },
+  );
   y += ROW_H;
 
-  // Grand total
-  writeRow(
-    ["", "", "GRAND TOTAL", "", "", "", formatINR(totalDebit), formatINR(totalCredit), formatINR(closing), closing < 0 ? "Dr" : "Cr"],
-    y,
-    { bold: true, bg: [28, 65, 165] },
-  );
-  // overwrite text color for grand total
+  // Grand total row (filled brand color)
   doc.setFillColor(28, 65, 165);
   doc.rect(M, y, innerW, ROW_H, "F");
-  doc.setTextColor(255, 255, 255);
+  doc.setTextColor(255);
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(7.5);
-  const gtCells = ["", "", "GRAND TOTAL", "", "", "", formatINR(totalDebit), formatINR(totalCredit), formatINR(closing), closing < 0 ? "Dr" : "Cr"];
+  doc.setFontSize(8.5);
+  const gtCells = [
+    "", "GRAND TOTAL", "", "",
+    formatINR(totalDebit),
+    formatINR(totalCredit),
+    formatINR(closing),
+    closing < 0 ? "Dr" : "Cr",
+  ];
   gtCells.forEach((c, i) => {
-    const x = aligns[i] === "right" ? colX[i] + widths[i] - 1.5
-      : aligns[i] === "center" ? colX[i] + widths[i] / 2
-      : colX[i] + 1.5;
-    doc.text(String(c), x, y + 4.4, { align: aligns[i] });
+    const x =
+      aligns[i] === "right"
+        ? colX[i] + widths[i] - 2
+        : aligns[i] === "center"
+        ? colX[i] + widths[i] / 2
+        : colX[i] + 2;
+    doc.text(String(c), x, y + 4.8, { align: aligns[i] });
   });
   drawRowBorders(y + ROW_H);
-  y += ROW_H + 3;
+  y += ROW_H + 6;
 
-  // Abbreviations
+  // Summary tiles
   if (y + 22 > limitY) y = startPage(false);
-  doc.setTextColor(28, 65, 165);
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(8);
-  doc.text("Abbreviations", M, y);
-  doc.setDrawColor(28, 65, 165);
-  doc.setLineWidth(0.3);
-  doc.line(M, y + 1, M + 28, y + 1);
-  y += 4;
-  doc.setTextColor(60);
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(7);
-  const abbr = [
-    "NEFT — National Electronic Funds Transfer",
-    "RTGS — Real Time Gross Settlement",
-    "IMPS — Immediate Payment Service",
-    "UPI — Unified Payments Interface",
-    "FT — Fund Transfer",
-    "TFR — Transfer",
-    "DR — Debit / Withdrawal",
-    "CR — Credit / Deposit",
+  const tileW = (innerW - 9) / 4;
+  const tileH = 16;
+  const tiles: [string, string][] = [
+    ["Total Debits", formatINR(totalDebit)],
+    ["Total Credits", formatINR(totalCredit)],
+    ["Net Movement", formatINR(totalCredit - totalDebit)],
+    ["Closing Balance", formatINR(closing)],
   ];
-  abbr.forEach((line, i) => {
-    doc.text(line, M + (i % 2) * (innerW / 2), y + Math.floor(i / 2) * 3.6);
+  tiles.forEach(([label, val], i) => {
+    const tx = M + i * (tileW + 3);
+    doc.setFillColor(248, 250, 253);
+    doc.setDrawColor(210);
+    doc.setLineWidth(0.2);
+    doc.rect(tx, y, tileW, tileH, "FD");
+    doc.setTextColor(110);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(7.5);
+    doc.text(label.toUpperCase(), tx + 3, y + 5.5);
+    doc.setTextColor(28, 65, 165);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(11);
+    doc.text(val, tx + 3, y + 12.5);
   });
-  y += Math.ceil(abbr.length / 2) * 3.6 + 4;
+  y += tileH + 6;
 
   // Disclaimer
-  if (y + 18 > limitY) y = startPage(false);
+  if (y + 16 > limitY) y = startPage(false);
   doc.setTextColor(28, 65, 165);
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(8);
+  doc.setFontSize(8.5);
   doc.text("Disclaimer", M, y);
+  doc.setDrawColor(28, 65, 165);
+  doc.setLineWidth(0.3);
   doc.line(M, y + 1, M + 22, y + 1);
-  y += 4;
+  y += 5;
   doc.setTextColor(70);
   doc.setFont("helvetica", "normal");
-  doc.setFontSize(7);
+  doc.setFontSize(7.5);
   const disclaimer =
     "The contents of this statement will be considered correct unless any discrepancy is reported within 30 days of statement generation. " +
-    "Account holders are advised to verify all entries and report any unauthorized transactions immediately. Keep your login credentials " +
-    "confidential and use Mobile Banking for modifications to beneficiaries, limits, or contact details.";
+    "Account holders are advised to verify all entries and report any unauthorised transaction immediately. Keep your login credentials confidential.";
   const wrapped = doc.splitTextToSize(disclaimer, innerW) as string[];
   doc.text(wrapped, M, y);
-  y += wrapped.length * 3.2 + 5;
+  y += wrapped.length * 3.4 + 5;
 
-  // End of statement
-  if (y + 8 > limitY) y = startPage(false);
+  if (y + 10 > limitY) y = startPage(false);
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(9);
+  doc.setFontSize(10);
   doc.setTextColor(28, 65, 165);
-  doc.text("*** END OF STATEMENT ***", W / 2, y + 2, { align: "center" });
+  doc.text("*** END OF STATEMENT ***", W / 2, y + 3, { align: "center" });
 
-  // Fill Page X of Y across all pages
+  // Fill footers
   const total = doc.getNumberOfPages();
   for (let p = 1; p <= total; p++) {
     doc.setPage(p);
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(7);
-    doc.setTextColor(120);
-    doc.text(`Page ${p} of ${total}`, W - M, H - FOOTER_H + 8, { align: "right" });
+    drawFooter(p, total);
   }
 
   doc.save(`FedBusiness_Statement_${user.accountNumber}.pdf`);
 }
 
 export function downloadCSV(filename: string, rows: (string | number)[][]) {
-  const csv = rows.map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(",")).join("\n");
+  const csv = rows
+    .map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(","))
+    .join("\n");
   const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
-  a.href = url; a.download = filename; a.click();
+  a.href = url;
+  a.download = filename;
+  a.click();
   URL.revokeObjectURL(url);
 }
