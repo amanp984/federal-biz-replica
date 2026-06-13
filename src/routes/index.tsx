@@ -268,7 +268,7 @@ function UtilLink({ icon: Icon, label }: { icon: React.ComponentType<{ size?: nu
 }
 function InfoLink({ to, children }: { to: string; children: React.ReactNode }) {
   return (
-    <Link to={to} className="text-fed-blue hover:underline">
+    <Link to={to as never} className="text-fed-blue hover:underline">
       {children}
     </Link>
   );
