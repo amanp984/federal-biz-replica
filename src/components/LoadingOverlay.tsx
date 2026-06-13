@@ -1,5 +1,4 @@
 import { AnimatePresence, motion } from "framer-motion";
-import { FEDERAL_LOGO_FULL } from "@/lib/logos";
 import { useRouterState } from "@tanstack/react-router";
 
 export function LoadingOverlay({ show }: { show: boolean }) {
@@ -14,18 +13,14 @@ export function LoadingOverlay({ show }: { show: boolean }) {
           className="fixed inset-0 z-[100] flex items-center justify-center backdrop-blur-md bg-white/30"
         >
           <div className="flex flex-col items-center gap-4 bg-transparent">
-            <motion.img
-              src={FEDERAL_LOGO_FULL}
-              alt="FED BUSINESS"
-              initial={{ scale: 0.9, opacity: 0.7 }}
-              animate={{ scale: [0.95, 1.05, 0.95], opacity: 1 }}
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0.8 }}
+              animate={{ scale: [0.97, 1.03, 0.97], opacity: 1 }}
               transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
-              className="w-28 h-auto"
-              style={{ background: "transparent" }}
-            />
-            <div className="text-fed-blue font-extrabold italic tracking-wide text-xl">
+              className="text-fed-blue font-extrabold italic tracking-wider text-3xl"
+            >
               FED BUSINESS
-            </div>
+            </motion.div>
             <div className="flex gap-1.5">
               <span className="w-2.5 h-2.5 rounded-full bg-fed-blue animate-bounce" style={{ animationDelay: "0ms" }} />
               <span className="w-2.5 h-2.5 rounded-full bg-fed-orange animate-bounce" style={{ animationDelay: "120ms" }} />
