@@ -2,9 +2,10 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { Download, FileText, Search } from "lucide-react";
 import { PageHeader } from "@/components/PageHeader";
-import { formatINR, useTransactions, withRunningBalance } from "@/lib/transactions-store";
+import { formatINR, withRunningBalance } from "@/lib/transactions-store";
 import { downloadCSV, downloadStatementPDF } from "@/lib/pdf";
 import { useAuth } from "@/lib/auth-store";
+import { useBankTransactions } from "@/lib/use-bank-transactions";
 
 export const Route = createFileRoute("/_app/transactions")({
   head: () => ({ meta: [{ title: "Transactions — FED BUSINESS" }] }),
@@ -12,7 +13,7 @@ export const Route = createFileRoute("/_app/transactions")({
 });
 
 function TransactionsPage() {
-  const { transactions } = useTransactions();
+  const { transactions, loading } = useBankTransactions();
   const { user } = useAuth();
   const [q, setQ] = useState("");
   const [from, setFrom] = useState("");
@@ -34,10 +35,11 @@ function TransactionsPage() {
 
   const exportCSV = () => {
     downloadCSV(`FedBusiness_Transactions.csv`, [
-      ["Date","Description","Reference","Debit","Credit","Balance"],
+      ["Date","Description","Txn ID","Reference","Debit","Credit","Balance"],
       ...filtered.map((t) => [
         new Date(t.date).toLocaleDateString("en-IN"),
-        t.description, t.reference, t.debit || "", t.credit || "", t.balance,
+        t.description, t.transactionId ?? "", t.reference,
+        t.debit || "", t.credit || "", t.balance,
       ]),
     ]);
   };
@@ -69,8 +71,10 @@ function TransactionsPage() {
 
       <div className="bg-white border rounded-md shadow-sm overflow-hidden">
         <div className="bg-fed-orange text-white px-4 py-2.5 font-semibold">Transaction History</div>
-        {slice.length === 0 ? (
-          <div className="p-12 text-center text-muted-foreground text-sm">No Recent Transactions Available</div>
+        {loading && all.length === 0 ? (
+          <div className="p-12 text-center text-muted-foreground text-sm">Loading transactions…</div>
+        ) : slice.length === 0 ? (
+          <div className="p-12 text-center text-muted-foreground text-sm">No Transactions Available</div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -88,7 +92,10 @@ function TransactionsPage() {
                 {slice.map((t) => (
                   <tr key={t.id} className="border-t hover:bg-secondary/50">
                     <td className="p-3 whitespace-nowrap">{new Date(t.date).toLocaleDateString("en-IN")}</td>
-                    <td className="p-3">{t.description}</td>
+                    <td className="p-3">
+                      <div>{t.description}</div>
+                      <div className="text-[10px] text-muted-foreground font-mono mt-0.5">{t.transactionId}</div>
+                    </td>
                     <td className="p-3 text-xs text-muted-foreground">{t.reference}</td>
                     <td className="p-3 text-right text-destructive">{t.debit ? formatINR(t.debit) : "—"}</td>
                     <td className="p-3 text-right text-emerald-700">{t.credit ? formatINR(t.credit) : "—"}</td>
@@ -99,11 +106,14 @@ function TransactionsPage() {
             </table>
           </div>
         )}
-        {filtered.length > perPage && (
+        {filtered.length > 0 && (
           <div className="flex items-center justify-between p-3 border-t text-sm">
-            <span className="text-muted-foreground">Page {page} of {pages}</span>
-            <div className="flex gap-2">
-              <button disabled={page<=1} onClick={() => setPage(p=>p-1)} className="px-3 py-1 border rounded disabled:opacity-40">Prev</button>
+            <span className="text-muted-foreground">
+              Showing {(page - 1) * perPage + 1}–{Math.min(page * perPage, filtered.length)} of {filtered.length}
+            </span>
+            <div className="flex gap-2 items-center">
+              <button disabled={page<=1} onClick={() => setPage(p=>p-1)} className="px-3 py-1 border rounded disabled:opacity-40">Previous</button>
+              <span className="px-2 text-muted-foreground">Page {page} of {pages}</span>
               <button disabled={page>=pages} onClick={() => setPage(p=>p+1)} className="px-3 py-1 border rounded disabled:opacity-40">Next</button>
             </div>
           </div>
