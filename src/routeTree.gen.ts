@@ -13,6 +13,7 @@ import { Route as TermsRouteImport } from './routes/terms'
 import { Route as SecurityRouteImport } from './routes/security'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as OtpRouteImport } from './routes/otp'
+import { Route as DisclaimerRouteImport } from './routes/disclaimer'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppWebhookDocsRouteImport } from './routes/_app.webhook-docs'
@@ -54,6 +55,11 @@ const PrivacyRoute = PrivacyRouteImport.update({
 const OtpRoute = OtpRouteImport.update({
   id: '/otp',
   path: '/otp',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DisclaimerRoute = DisclaimerRouteImport.update({
+  id: '/disclaimer',
+  path: '/disclaimer',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AppRoute = AppRouteImport.update({
@@ -168,6 +174,7 @@ const ApiPublicSmsWebhookRoute = ApiPublicSmsWebhookRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/disclaimer': typeof DisclaimerRoute
   '/otp': typeof OtpRoute
   '/privacy': typeof PrivacyRoute
   '/security': typeof SecurityRoute
@@ -195,6 +202,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/disclaimer': typeof DisclaimerRoute
   '/otp': typeof OtpRoute
   '/privacy': typeof PrivacyRoute
   '/security': typeof SecurityRoute
@@ -224,6 +232,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_app': typeof AppRouteWithChildren
+  '/disclaimer': typeof DisclaimerRoute
   '/otp': typeof OtpRoute
   '/privacy': typeof PrivacyRoute
   '/security': typeof SecurityRoute
@@ -253,6 +262,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/disclaimer'
     | '/otp'
     | '/privacy'
     | '/security'
@@ -280,6 +290,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/disclaimer'
     | '/otp'
     | '/privacy'
     | '/security'
@@ -308,6 +319,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_app'
+    | '/disclaimer'
     | '/otp'
     | '/privacy'
     | '/security'
@@ -337,6 +349,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppRoute: typeof AppRouteWithChildren
+  DisclaimerRoute: typeof DisclaimerRoute
   OtpRoute: typeof OtpRoute
   PrivacyRoute: typeof PrivacyRoute
   SecurityRoute: typeof SecurityRoute
@@ -372,6 +385,13 @@ declare module '@tanstack/react-router' {
       path: '/otp'
       fullPath: '/otp'
       preLoaderRoute: typeof OtpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/disclaimer': {
+      id: '/disclaimer'
+      path: '/disclaimer'
+      fullPath: '/disclaimer'
+      preLoaderRoute: typeof DisclaimerRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_app': {
@@ -580,6 +600,7 @@ const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRoute: AppRouteWithChildren,
+  DisclaimerRoute: DisclaimerRoute,
   OtpRoute: OtpRoute,
   PrivacyRoute: PrivacyRoute,
   SecurityRoute: SecurityRoute,
