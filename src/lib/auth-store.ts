@@ -34,7 +34,7 @@ const DEMO_USER: User = {
   customerId: "FB10029384",
   cif: "CIF8472619",
   accountNumber: "99980128569460",
-  ifsc: "FDRL0001234",
+  ifsc: "FDRL0083457",
   branch: "Mumbai Main Office",
   branchAddress: "FED BUSINESS, Fort Office, Mumbai - 400001",
   accountType: "Current",
