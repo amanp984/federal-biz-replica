@@ -135,7 +135,7 @@ export function downloadStatementPDF(
       ["Email", user.email],
       ["Account Status", "ACTIVE"],
       ["Mode of Operation", "SINGLE"],
-      ["Effective Available Balance", formatINR(closing)],
+      ["Effective Available Balance", formatINRPdf(closing)],
     ];
 
     const rowH = (INFO_H - 8) / left.length;
@@ -236,7 +236,7 @@ export function downloadStatementPDF(
     doc.setFontSize(8);
     cells.forEach((c, i) => {
       const isNum = numericCols.has(i);
-      if (isNum) doc.setFont("courier", opts?.bold ? "bold" : "normal");
+      if (isNum) doc.setFont("helvetica", opts?.bold ? "bold" : "normal");
       else doc.setFont("helvetica", opts?.bold ? "bold" : "normal");
       const x =
         aligns[i] === "right"
@@ -255,7 +255,7 @@ export function downloadStatementPDF(
 
   // Opening balance row
   writeRow(
-    ["", "Opening Balance", "", "", "", "", formatINR(opening), "Cr"],
+    ["", "Opening Balance", "", "", "", "", formatINRPdf(opening), "Cr"],
     y,
     { bold: true, bg: [248, 250, 253] },
   );
@@ -284,9 +284,9 @@ export function downloadStatementPDF(
         String(t.description || ""),
         tranId,
         tranType,
-        t.debit ? formatINR(t.debit) : "",
-        t.credit ? formatINR(t.credit) : "",
-        formatINR(t.balance),
+        t.debit ? formatINRPdf(t.debit) : "",
+        t.credit ? formatINRPdf(t.credit) : "",
+        formatINRPdf(t.balance),
         crDr,
       ],
       y,
@@ -308,7 +308,7 @@ export function downloadStatementPDF(
 
   // Closing balance row
   writeRow(
-    ["", "Closing Balance", "", "", "", "", formatINR(closing), closing < 0 ? "Dr" : "Cr"],
+    ["", "Closing Balance", "", "", "", "", formatINRPdf(closing), closing < 0 ? "Dr" : "Cr"],
     y,
     { bold: true, bg: [240, 244, 252] },
   );
@@ -322,14 +322,14 @@ export function downloadStatementPDF(
   doc.setFontSize(8.5);
   const gtCells = [
     "", "GRAND TOTAL", "", "",
-    formatINR(totalDebit),
-    formatINR(totalCredit),
-    formatINR(closing),
+    formatINRPdf(totalDebit),
+    formatINRPdf(totalCredit),
+    formatINRPdf(closing),
     closing < 0 ? "Dr" : "Cr",
   ];
   gtCells.forEach((c, i) => {
     const isNum = numericCols.has(i);
-    doc.setFont(isNum ? "courier" : "helvetica", "bold");
+    doc.setFont(isNum ? "helvetica" : "helvetica", "bold");
     const x =
       aligns[i] === "right"
         ? colX[i] + widths[i] - 3
@@ -346,10 +346,10 @@ export function downloadStatementPDF(
   const tileW = (innerW - 9) / 4;
   const tileH = 16;
   const tiles: [string, string][] = [
-    ["Total Debits", formatINR(totalDebit)],
-    ["Total Credits", formatINR(totalCredit)],
-    ["Net Movement", formatINR(totalCredit - totalDebit)],
-    ["Closing Balance", formatINR(closing)],
+    ["Total Debits", formatINRPdf(totalDebit)],
+    ["Total Credits", formatINRPdf(totalCredit)],
+    ["Net Movement", formatINRPdf(totalCredit - totalDebit)],
+    ["Closing Balance", formatINRPdf(closing)],
   ];
   tiles.forEach(([label, val], i) => {
     const tx = M + i * (tileW + 3);
