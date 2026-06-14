@@ -3,7 +3,6 @@ import type { User } from "./auth-store";
 import {
   type Transaction,
   withRunningBalance,
-  formatINR,
 } from "./transactions-store";
 
 // jsPDF's built-in Helvetica uses WinAnsi encoding which has no glyph for
