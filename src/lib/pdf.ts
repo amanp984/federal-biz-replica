@@ -6,6 +6,17 @@ import {
   formatINR,
 } from "./transactions-store";
 
+// jsPDF's built-in Helvetica uses WinAnsi encoding which has no glyph for
+// the Indian Rupee sign (U+20B9). Using it in the PDF produces broken
+// output (stray superscript chars + apparent "letter spacing"). Render
+// currency with an ASCII "Rs." prefix in PDFs only.
+const formatINRPdf = (n: number) =>
+  "Rs. " +
+  new Intl.NumberFormat("en-IN", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(n);
+
 /**
  * A4 LANDSCAPE bank-style account statement.
  * Wide canvas (297mm) eliminates the column-collision issues of the previous
