@@ -52,9 +52,9 @@ export function LegalPage({
 export function DemoNotice() {
   return (
     <div className="border-l-4 border-fed-orange bg-fed-orange/10 p-4 rounded">
-      <p className="font-bold text-fed-blue mb-1">Educational Demonstration Notice</p>
+      <p className="font-bold text-fed-blue mb-1">Notice</p>
       <p className="text-sm">
-        This website is a banking interface demonstration created for educational, testing
+        This website is a banking interface demonstration created for service, testing
         and UI showcase purposes only. No real banking services are provided, no real
         financial transactions occur, and this platform has no affiliation with any
         actual banking institution. This is a demonstration environment only.
