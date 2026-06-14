@@ -174,7 +174,7 @@ const SCHEDULED = [
 ];
 
 const LINKED = [
-  { type: "Current", no: "99980128569460", balance: 845000 },
+  { type: "Current", no: "99543369219460", balance: 845000 },
   { type: "Overdraft", no: "99980128562288", balance: 1250000 },
   { type: "Escrow", no: "99980128562299", balance: 620000 },
 ];
