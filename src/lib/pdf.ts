@@ -50,7 +50,8 @@ export function downloadStatementPDF(
   const aligns: ("left" | "right" | "center")[] = [
     "left", "left", "left", "center", "right", "right", "right", "center",
   ];
-  const colW = [22, 110, 38, 16, 30, 30, 30, 12]; // 288
+  // widened Balance + Dr/Cr to prevent currency overlap with adjacent cells
+  const colW = [22, 96, 36, 14, 30, 30, 40, 20]; // 288
   const sum = colW.reduce((a, b) => a + b, 0);
   const scale = innerW / sum;
   const widths = colW.map((w) => w * scale);
@@ -209,6 +210,7 @@ export function downloadStatementPDF(
     doc.line(M + innerW, yBottom - ROW_H, M + innerW, yBottom);
   };
 
+  const numericCols = new Set([4, 5, 6]);
   const writeRow = (
     cells: string[],
     y0: number,
@@ -222,13 +224,16 @@ export function downloadStatementPDF(
     doc.setFont("helvetica", opts?.bold ? "bold" : "normal");
     doc.setFontSize(8);
     cells.forEach((c, i) => {
+      const isNum = numericCols.has(i);
+      if (isNum) doc.setFont("courier", opts?.bold ? "bold" : "normal");
+      else doc.setFont("helvetica", opts?.bold ? "bold" : "normal");
       const x =
         aligns[i] === "right"
-          ? colX[i] + widths[i] - 2
+          ? colX[i] + widths[i] - 3
           : aligns[i] === "center"
           ? colX[i] + widths[i] / 2
-          : colX[i] + 2;
-      const maxW = widths[i] - 4;
+          : colX[i] + 2.5;
+      const maxW = widths[i] - 5;
       const text = (doc.splitTextToSize(String(c ?? ""), maxW)[0] ?? "") as string;
       doc.text(text, x, y0 + 4.8, { align: aligns[i] });
     });
@@ -312,12 +317,14 @@ export function downloadStatementPDF(
     closing < 0 ? "Dr" : "Cr",
   ];
   gtCells.forEach((c, i) => {
+    const isNum = numericCols.has(i);
+    doc.setFont(isNum ? "courier" : "helvetica", "bold");
     const x =
       aligns[i] === "right"
-        ? colX[i] + widths[i] - 2
+        ? colX[i] + widths[i] - 3
         : aligns[i] === "center"
         ? colX[i] + widths[i] / 2
-        : colX[i] + 2;
+        : colX[i] + 2.5;
     doc.text(String(c), x, y + 4.8, { align: aligns[i] });
   });
   drawRowBorders(y + ROW_H);

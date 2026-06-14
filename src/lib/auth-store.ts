@@ -30,10 +30,10 @@ interface AuthState {
 
 const DEMO_USER: User = {
   userId: "FEDBIZ001",
-  customerName: "ANJAN JATASHANKAR PRAJAPATI",
+  customerName: "AMAN J",
   customerId: "FB10029384",
   cif: "CIF8472619",
-  accountNumber: "99980128562266",
+  accountNumber: "99980128569460",
   ifsc: "FDRL0001234",
   branch: "Mumbai Main Office",
   branchAddress: "FED BUSINESS, Fort Office, Mumbai - 400001",
