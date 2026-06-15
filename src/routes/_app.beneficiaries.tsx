@@ -338,6 +338,17 @@ function Activity_({ line, amount, when }: { line: string; amount: string; when:
   );
 }
 
+function EmptyState({ icon: Icon, message }: { icon: React.ComponentType<{ size?: number }>; message: string }) {
+  return (
+    <div className="py-6 flex flex-col items-center justify-center text-center gap-2 text-muted-foreground">
+      <div className="w-10 h-10 rounded-full grid place-items-center bg-fed-blue/5 text-fed-blue/70">
+        <Icon size={20} />
+      </div>
+      <p className="text-xs">{message}</p>
+    </div>
+  );
+}
+
 function AddBeneficiaryDialog({
   open, onClose, onSubmit,
 }: { open: boolean; onClose: () => void; onSubmit: () => void }) {
