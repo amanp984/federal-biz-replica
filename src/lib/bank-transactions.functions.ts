@@ -9,6 +9,7 @@ export interface BankTxnDTO {
   utr_number: string;
   beneficiary_account_last_digits: string | null;
   amount: number;
+  created_at: string;
 }
 
 export const listBankTransactions = createServerFn({ method: "GET" }).handler(
@@ -19,9 +20,8 @@ export const listBankTransactions = createServerFn({ method: "GET" }).handler(
     const { data, error } = await supabaseAdmin
       .from("bank_transactions")
       .select(
-        "id, transaction_date, transaction_type, payment_mode, account_holder_name, utr_number, beneficiary_account_last_digits, amount",
+        "id, transaction_date, transaction_type, payment_mode, account_holder_name, utr_number, beneficiary_account_last_digits, amount, created_at",
       )
-      .order("transaction_date", { ascending: false })
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
     return (data ?? []) as BankTxnDTO[];
