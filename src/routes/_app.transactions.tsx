@@ -1,3 +1,4 @@
+import { formatDDMMYYYY } from "@/lib/format-date";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { Download, FileText, Search } from "lucide-react";
@@ -37,7 +38,7 @@ function TransactionsPage() {
     downloadCSV(`FedBusiness_Transactions.csv`, [
       ["Date","Description","Txn ID","Reference","Debit","Credit","Balance"],
       ...filtered.map((t) => [
-        new Date(t.date).toLocaleDateString("en-IN"),
+        formatDDMMYYYY(t.date),
         t.description, t.transactionId ?? "", t.reference,
         t.debit || "", t.credit || "", t.balance,
       ]),
@@ -91,7 +92,7 @@ function TransactionsPage() {
               <tbody>
                 {slice.map((t) => (
                   <tr key={t.id} className="border-t hover:bg-secondary/50">
-                    <td className="p-3 whitespace-nowrap">{new Date(t.date).toLocaleDateString("en-IN")}</td>
+                    <td className="p-3 whitespace-nowrap">{formatDDMMYYYY(t.date)}</td>
                     <td className="p-3">
                       <div>{t.description}</div>
                       <div className="text-[10px] text-muted-foreground font-mono mt-0.5">{t.transactionId}</div>

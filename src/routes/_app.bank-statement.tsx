@@ -1,3 +1,4 @@
+import { formatDDMMYYYY } from "@/lib/format-date";
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { PageHeader } from "@/components/PageHeader";
@@ -84,7 +85,7 @@ function BankStatement() {
                   return (
                     <tr key={t.id} className="border-t hover:bg-secondary/50">
                       <td className="p-3 whitespace-nowrap">
-                        {new Date(t.transaction_date).toLocaleDateString("en-IN")}
+                        {formatDDMMYYYY(t.transaction_date)}
                       </td>
                       <td className="p-3">
                         <span
