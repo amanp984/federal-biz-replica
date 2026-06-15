@@ -88,7 +88,9 @@ export function useBankTransactions(): UseBankTransactionsResult {
     () =>
       rows.map((r) => ({
         id: r.id,
-        date: r.transaction_date,
+        // Use created_at as the true chronological timestamp so intra-day
+        // ordering and running-balance accumulation match real arrival order.
+        date: r.created_at || r.transaction_date,
         description: buildDescription(r),
         reference: r.utr_number,
         transactionId: internalTxnId(r.id),
