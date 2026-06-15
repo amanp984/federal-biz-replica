@@ -79,9 +79,9 @@ function FundTransfer() {
           {/* Transfer insights */}
           <Panel title="Transfer Insights" icon={Activity}>
             <div className="grid grid-cols-3 gap-3 text-center">
-              <Insight label="This Month" value={formatINR(12,330.00)} delta="+12.4%" up />
-              <Insight label="Last Month" value={formatINR(16,922.00)} delta="-3.1%" />
-              <Insight label="Avg / Transfer" value={formatINR(3,750.00)} delta="+5.2%" up />
+              <Insight label="This Month" value={formatINR(12330)} delta="+12.4%" up />
+              <Insight label="Last Month" value={formatINR(16922)} delta="-3.1%" />
+              <Insight label="Avg / Transfer" value={formatINR(3750)} delta="+5.2%" up />
             </div>
           </Panel>
 
@@ -116,7 +116,7 @@ function FundTransfer() {
                     <div className="font-semibold">{a.type}</div>
                     <div className="text-xs text-muted-foreground">****{a.no.slice(-4)}</div>
                   </div>
-                  <div className="font-semibold text-fed-blue">{formatINR(a.balance)}</div>
+                  <div className="font-semibold text-fed-blue">{a.balance}</div>
                 </li>
               ))}
             </ul>
