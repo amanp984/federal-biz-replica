@@ -7,6 +7,7 @@ import {
   Activity, Star, BarChart3, Wallet, Pencil, Trash2, Eye, Search, ArrowUpDown, Filter,
 } from "lucide-react";
 import { formatINR } from "@/lib/transactions-store";
+import { useBankTransactions } from "@/lib/use-bank-transactions";
 
 export const Route = createFileRoute("/_app/beneficiaries")({
   head: () => ({ meta: [{ title: "Beneficiaries — FED BUSINESS" }] }),
@@ -41,7 +42,20 @@ function Beneficiaries() {
   const [page, setPage] = useState(1);
   const [query, setQuery] = useState("");
   const [bankFilter, setBankFilter] = useState("All");
-  const [sort, setSort] = useState<"az" | "za" | "recent">("az");
+  const [sort, setSort] = useState<"az" | "za">("az");
+
+  const { transactions, balance } = useBankTransactions();
+  const stats = useMemo(() => {
+    let totalCredits = 0, totalDebits = 0, creditVol = 0, debitVol = 0;
+    for (const t of transactions) {
+      if (t.credit > 0) { totalCredits++; creditVol += t.credit; }
+      if (t.debit > 0) { totalDebits++; debitVol += t.debit; }
+    }
+    return {
+      totalCredits, totalDebits, creditVol, debitVol,
+      total: transactions.length,
+    };
+  }, [transactions]);
 
   const banks = useMemo(() => ["All", ...Array.from(new Set(BENS.map((b) => b.bank)))], []);
 
@@ -53,7 +67,6 @@ function Beneficiaries() {
     );
     if (sort === "az") r = r.slice().sort((a, b) => a.name.localeCompare(b.name));
     else if (sort === "za") r = r.slice().sort((a, b) => b.name.localeCompare(a.name));
-    else r = r.slice().sort((a, b) => b.lastTransfer.localeCompare(a.lastTransfer));
     return r;
   }, [query, bankFilter, sort]);
 
@@ -134,7 +147,6 @@ function Beneficiaries() {
           >
             <option value="az">Sort A–Z</option>
             <option value="za">Sort Z–A</option>
-            <option value="recent">Most Recent Transfer</option>
           </select>
         </label>
       </div>
@@ -150,7 +162,6 @@ function Beneficiaries() {
                   <th className="px-3 py-2.5 font-semibold">Account Number</th>
                   <th className="px-3 py-2.5 font-semibold">IFSC</th>
                   <th className="px-3 py-2.5 font-semibold">Status</th>
-                  <th className="px-3 py-2.5 font-semibold">Last Transfer</th>
                   <th className="px-3 py-2.5 font-semibold text-right">Actions</th>
                 </tr>
               </thead>
@@ -162,7 +173,6 @@ function Beneficiaries() {
                     <td className="px-3 py-2.5 font-mono">{b.acct}</td>
                     <td className="px-3 py-2.5 font-mono text-xs">{b.ifsc}</td>
                     <td className="px-3 py-2.5"><StatusBadge status={b.status} /></td>
-                    <td className="px-3 py-2.5">{b.lastTransfer}</td>
                     <td className="px-3 py-2.5">
                       <div className="flex justify-end gap-1">
                         <button onClick={blockedAction("view")} className="p-1.5 rounded hover:bg-secondary" title="View"><Eye size={14} /></button>
@@ -174,7 +184,7 @@ function Beneficiaries() {
                   </tr>
                 ))}
                 {visible.length === 0 && (
-                  <tr><td colSpan={7} className="px-3 py-6 text-center text-muted-foreground text-sm">No beneficiaries match your search.</td></tr>
+                  <tr><td colSpan={6} className="px-3 py-6 text-center text-muted-foreground text-sm">No beneficiaries match your search.</td></tr>
                 )}
               </tbody>
             </table>
@@ -215,37 +225,27 @@ function Beneficiaries() {
           </ul>
         </Panel>
         <Panel title="Recent Beneficiary Activity" icon={Activity}>
-          <ul className="text-xs space-y-2">
-            <Activity_ line="Transfer to Rahul Sharma" amount={formatINR(48500)} when="Today, 10:42" />
-            <Activity_ line="Transfer to Acme Vendors Pvt Ltd" amount={formatINR(215000)} when="Yesterday" />
-            <Activity_ line="Added Karan Mehra" amount="—" when="2 days ago" />
-            <Activity_ line="Transfer to Sneha Verma" amount={formatINR(12750)} when="3 days ago" />
-          </ul>
+          <EmptyState icon={Activity} message="No recent beneficiary activity available." />
         </Panel>
         <Panel title="Beneficiary Statistics" icon={BarChart3}>
-          <dl className="text-xs space-y-1.5">
-            <Row k="Total Beneficiaries" v={String(BENS.length)} />
-            <Row k="Same Bank (FED)" v="2" />
-            <Row k="Other Banks" v="10" />
-            <Row k="Avg Transfers / Month" v="42" />
-            <Row k="Largest Transfer" v={formatINR(1480000)} />
-          </dl>
+          <EmptyState icon={BarChart3} message="No beneficiary statistics available." />
         </Panel>
 
         <Panel title="Transfer Insights" icon={Activity}>
           <dl className="text-xs space-y-1.5">
-            <Row k="This Month" v={formatINR(1845200)} />
-            <Row k="Last Month" v={formatINR(1641300)} />
-            <Row k="Avg / Transfer" v={formatINR(38450)} />
-            <Row k="Mode Split" v="NEFT 48% · IMPS 32% · RTGS 20%" />
+            <Row k="Total Transactions" v={String(stats.total)} />
+            <Row k="Total Credits" v={String(stats.totalCredits)} />
+            <Row k="Total Debits" v={String(stats.totalDebits)} />
+            <Row k="Credit Volume" v={formatINR(stats.creditVol)} />
+            <Row k="Debit Volume" v={formatINR(stats.debitVol)} />
           </dl>
         </Panel>
         <Panel title="Account Summary" icon={Wallet}>
           <dl className="text-xs space-y-1.5">
-            <Row k="Current A/C" v={formatINR(845000)} />
-            <Row k="Overdraft Available" v={formatINR(1250000)} />
-            <Row k="Escrow Balance" v={formatINR(620000)} />
-            <Row k="Hold Amount" v={formatINR(0)} />
+            <Row k="Current Balance" v={formatINR(balance)} />
+            <Row k="Total Credits" v={formatINR(stats.creditVol)} />
+            <Row k="Total Debits" v={formatINR(stats.debitVol)} />
+            <Row k="Transaction Count" v={String(stats.total)} />
           </dl>
         </Panel>
         <Panel title="Account Statement" icon={FileText}>
@@ -254,20 +254,10 @@ function Beneficiaries() {
         </Panel>
 
         <Panel title="Loan Overview" icon={Landmark}>
-          <dl className="text-xs space-y-1.5">
-            <Row k="Active Loans" v="2" />
-            <Row k="Outstanding" v={formatINR(4250000)} />
-            <Row k="Next EMI" v={`${formatINR(58400)} · 12 Jul`} />
-            <Row k="EMI Status" v="On Track" />
-          </dl>
+          <EmptyState icon={Landmark} message="No Active Loans Yet" />
         </Panel>
         <Panel title="Investment Summary" icon={PiggyBank}>
-          <dl className="text-xs space-y-1.5">
-            <Row k="FDs" v={formatINR(2150000)} />
-            <Row k="Mutual Funds" v={formatINR(1380000)} />
-            <Row k="Total Portfolio" v={formatINR(3530000)} />
-            <Row k="YTD Return" v="+11.4%" />
-          </dl>
+          <EmptyState icon={PiggyBank} message="No Investments Yet" />
         </Panel>
       </div>
 
