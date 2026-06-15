@@ -4,6 +4,7 @@ import {
   type Transaction,
   withRunningBalance,
 } from "./transactions-store";
+import { formatDDMMYYYY } from "./format-date";
 
 // jsPDF's built-in Helvetica uses WinAnsi encoding which has no glyph for
 // the Indian Rupee sign (U+20B9). Using it in the PDF produces broken
@@ -45,11 +46,9 @@ export function downloadStatementPDF(
   const totalCredit = ordered.reduce((s, t) => s + (t.credit || 0), 0);
 
   const today = new Date();
+  const firstOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
   const period =
-    periodLabel ??
-    `01-${String(today.getMonth() + 1).padStart(2, "0")}-${today.getFullYear()} to ${String(
-      today.getDate(),
-    ).padStart(2, "0")}-${String(today.getMonth() + 1).padStart(2, "0")}-${today.getFullYear()}`;
+    periodLabel ?? `${formatDDMMYYYY(firstOfMonth)} to ${formatDDMMYYYY(today)}`;
 
   // ---- Layout constants
   const HEADER_H = 18;
@@ -266,11 +265,7 @@ export function downloadStatementPDF(
 
   ordered.forEach((t, i) => {
     if (y + ROW_H > limitY) y = startPage(false);
-    const d = new Date(t.date);
-    const dateStr = d
-      .toLocaleDateString("en-GB")
-      .replace(/\//g, "-")
-      .toUpperCase();
+    const dateStr = formatDDMMYYYY(t.date);
     const desc = String(t.description || "").toUpperCase();
     const tranType =
       /UPI/.test(desc) ? "UPI"
@@ -305,9 +300,10 @@ export function downloadStatementPDF(
     y += ROW_H;
   }
 
-  // Tail (closing + grand total + summary + disclaimer + end mark)
-  const TAIL_H = ROW_H * 2 + 30 + 18 + 12;
-  if (y + TAIL_H > limitY) y = startPage(false);
+  // Tail (closing + grand total + summary + disclaimer + end mark).
+  // Do NOT force a new page for the whole tail — that creates an unwanted
+  // "summary-only" Page 2. Each tail block below has its own per-piece
+  // overflow check, so they flow onto Page 2 only when truly necessary.
 
   // Closing balance row
   writeRow(

@@ -1,3 +1,4 @@
+import { formatDDMMYYYY } from "@/lib/format-date";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { PageHeader } from "@/components/PageHeader";
 import { useAuth } from "@/lib/auth-store";
@@ -51,7 +52,7 @@ function Accounts() {
             <tbody>
               {transactions.slice(0, 5).map((t) => (
                 <tr key={t.id} className="border-t">
-                  <td className="p-3">{new Date(t.date).toLocaleDateString("en-IN")}</td>
+                  <td className="p-3">{formatDDMMYYYY(t.date)}</td>
                   <td className="p-3">
                     <div>{t.description}</div>
                     <div className="text-[10px] text-muted-foreground font-mono mt-0.5">{t.transactionId}</div>
