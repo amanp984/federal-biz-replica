@@ -147,14 +147,14 @@ function FundTransfer() {
           <Panel title="Loan Summary" icon={Landmark}>
             <dl className="text-xs space-y-1.5">
               <Row k="Active Loans" v="2" />
-              <Row k="Outstanding" v={formatINR(NO DUE)} />
-              <Row k="Next EMI" v={`${formatINR(NO DUE)} · 12 Jul`} />
+              <Row k="Outstanding" v="NO DUE" />
+              <Row k="Next EMI" v="NO DUE · 12 Jul" />
             </dl>
           </Panel>
 
           <Panel title="Investment Summary" icon={PiggyBank}>
             <dl className="text-xs space-y-1.5">
-              <Row k="FDs" v={formatINR(NO DUE )} />
+              <Row k="FDs" v="NO DUE" />
               <Row k="Mutual Funds" v={formatINR(13890)} />
               <Row k="Total Portfolio" v={formatINR(35700)} />
             </dl>
@@ -174,13 +174,13 @@ const SCHEDULED = [
 ];
 
 const LINKED = [
-  { type: "Current", no: "99543369219460", balance: Not Linked },
-  { type: "Overdraft", no: "99980128562288", balance: Not Linked  },
-  { type: "Escrow", no: "99980128562299", balance: Not Linked  },
+  { type: "Current", no: "99543369219460", balance: "Not Linked" },
+  { type: "Overdraft", no: "99980128562288", balance: "Not Linked" },
+  { type: "Escrow", no: "99980128562299", balance: "Not Linked" },
 ];
 
 function StatCard({ icon: Icon, label, value, accent }: { icon: React.ComponentType<{ size?: number }>; label: string; value: string; accent: "blue" | "orange" | "green" }) {
-  const tone = accsent === "blue" ? "text-fed-blue bg-fed-blue/10" : accent === "orange" ? "text-fed-orange bg-fed-orange/10" : "text-fed-green bg-fed-green/10";
+  const tone = accent === "blue" ? "text-fed-blue bg-fed-blue/10" : accent === "orange" ? "text-fed-orange bg-fed-orange/10" : "text-fed-green bg-fed-green/10";
   return (
     <div className="bg-white border rounded-md shadow-sm p-4 flex items-center gap-3">
       <div className={`w-10 h-10 rounded-md grid place-items-center ${tone}`}><Icon size={20} /></div>
