@@ -52,11 +52,11 @@ function extractUtr(msg: string): string | null {
 }
 
 function extractName(msg: string): string {
-  // "to NAME", "from NAME", "by NAME"
+  // "to NAME", "from NAME", "by NAME" — case-insensitive, stop at next field.
   const m = msg.match(
-    /\b(?:to|from|by|frm)\s+([A-Z][A-Z .'-]{2,40}?)(?=\s+(?:on|via|UPI|IMPS|NEFT|RTGS|Ref|UTR|A\/c|Acc|-|\.|,|$))/,
+    /\b(?:to|from|by|frm)\s+([A-Za-z][A-Za-z .'-]{1,60}?)(?=\s+(?:on|via|UPI|IMPS|NEFT|RTGS|Ref|UTR|A\/c|Acc)\b|\s*[.,-]|\s*$)/i,
   );
-  if (m) return m[1].trim().replace(/\s+/g, " ");
+  if (m) return m[1].trim().replace(/\s+/g, " ").toUpperCase();
   // VPA like "name@bank"
   const vpa = msg.match(/\b([a-zA-Z0-9._-]{2,})@[a-zA-Z]{2,}\b/);
   if (vpa) return vpa[1].replace(/[._-]/g, " ").toUpperCase();
@@ -64,9 +64,12 @@ function extractName(msg: string): string {
 }
 
 function extractBeneficiaryLast(msg: string): string | null {
+  // Prefer the beneficiary account after "to A/c" / "to ... A/c XX####".
+  const to = msg.match(/\bto\b[\s\S]{0,80}?A\/c[^\d]*([Xx*]{2,}\s*)?(\d{3,6})\b/i);
+  if (to) return to[2];
   const m =
-    msg.match(/(?:A\/c|Acc(?:ount)?|to\s*A\/c)[^\d]*([Xx*]{2,}\s*)?(\d{3,6})\b/) ||
-    msg.match(/\bXX+(\d{3,6})\b/) ||
+    msg.match(/(?:A\/c|Acc(?:ount)?)[^\d]*([Xx*]{2,}\s*)?(\d{3,6})\b/i) ||
+    msg.match(/\bXX+(\d{3,6})\b/i) ||
     msg.match(/\*{2,}(\d{3,6})\b/);
   return m ? m[m.length - 1] : null;
 }
