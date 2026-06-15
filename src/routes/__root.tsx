@@ -77,18 +77,18 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "FED BUSINESS" },
+      { title: "FED BUSINESS PORTAL" },
       { name: "description", content: "FED BUSINESS-PAYMENTS-SECURE RELIABLE" },
       { name: "author", content: "Lovable" },
-      { property: "og:title", content: "FED BUSINESS" },
+      { property: "og:title", content: "FED BUSINESS PORTAL" },
       { property: "og:description", content: "FED BUSINESS-PAYMENTS-SECURE RELIABLE" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@Lovable" },
-      { name: "twitter:title", content: "FED BUSINESS" },
+      { name: "twitter:title", content: "FED BUSINESS PORTAL" },
       { name: "twitter:description", content: "FED BUSINESS-PAYMENTS-SECURE RELIABLE" },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/37cc5fe1-17e9-4491-ba0f-9b24b74b5f0b/id-preview-56edf264--78178b6b-0690-4d19-8990-e37542fb638f.lovable.app-1781500404155.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/37cc5fe1-17e9-4491-ba0f-9b24b74b5f0b/id-preview-56edf264--78178b6b-0690-4d19-8990-e37542fb638f.lovable.app-1781500404155.png" },
+      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/5mWgc7tMlngxqKClSrYEth9HUyw1/social-images/social-1781510624649-Screenshot_2026-06-15_133333.webp" },
+      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/5mWgc7tMlngxqKClSrYEth9HUyw1/social-images/social-1781510624649-Screenshot_2026-06-15_133333.webp" },
     ],
     links: [
       {
