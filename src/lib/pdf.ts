@@ -9,12 +9,16 @@ import {
 // the Indian Rupee sign (U+20B9). Using it in the PDF produces broken
 // output (stray superscript chars + apparent "letter spacing"). Render
 // currency with an ASCII "Rs." prefix in PDFs only.
-const formatINRPdf = (n: number) =>
-  "Rs. " +
+const inrNumber = (n: number) =>
   new Intl.NumberFormat("en-IN", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(n);
+// "Rs." prefix kept for non-table contexts (summary tiles, info block).
+const formatINRPdf = (n: number) => "Rs. " + inrNumber(n);
+// Plain numeric for the ledger table columns (Withdrawals/Deposits/Balance),
+// the Closing Balance row, and the Grand Total row — like a real bank PDF.
+const formatNumPdf = (n: number) => inrNumber(n);
 
 /**
  * A4 LANDSCAPE bank-style account statement.
@@ -254,7 +258,7 @@ export function downloadStatementPDF(
 
   // Opening balance row
   writeRow(
-    ["", "Opening Balance", "", "", "", "", formatINRPdf(opening), "Cr"],
+    ["", "Opening Balance", "", "", "", "", formatNumPdf(opening), "Cr"],
     y,
     { bold: true, bg: [248, 250, 253] },
   );
@@ -283,9 +287,9 @@ export function downloadStatementPDF(
         String(t.description || ""),
         tranId,
         tranType,
-        t.debit ? formatINRPdf(t.debit) : "",
-        t.credit ? formatINRPdf(t.credit) : "",
-        formatINRPdf(t.balance),
+        t.debit ? formatNumPdf(t.debit) : "",
+        t.credit ? formatNumPdf(t.credit) : "",
+        formatNumPdf(t.balance),
         crDr,
       ],
       y,
@@ -307,7 +311,7 @@ export function downloadStatementPDF(
 
   // Closing balance row
   writeRow(
-    ["", "Closing Balance", "", "", "", "", formatINRPdf(closing), closing < 0 ? "Dr" : "Cr"],
+    ["", "Closing Balance", "", "", "", "", formatNumPdf(closing), closing < 0 ? "Dr" : "Cr"],
     y,
     { bold: true, bg: [240, 244, 252] },
   );
@@ -321,9 +325,9 @@ export function downloadStatementPDF(
   doc.setFontSize(8.5);
   const gtCells = [
     "", "GRAND TOTAL", "", "",
-    formatINRPdf(totalDebit),
-    formatINRPdf(totalCredit),
-    formatINRPdf(closing),
+    formatNumPdf(totalDebit),
+    formatNumPdf(totalCredit),
+    formatNumPdf(closing),
     closing < 0 ? "Dr" : "Cr",
   ];
   gtCells.forEach((c, i) => {
