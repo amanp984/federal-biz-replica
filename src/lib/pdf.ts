@@ -46,11 +46,9 @@ export function downloadStatementPDF(
   const totalCredit = ordered.reduce((s, t) => s + (t.credit || 0), 0);
 
   const today = new Date();
+  const firstOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
   const period =
-    periodLabel ??
-    `01-${String(today.getMonth() + 1).padStart(2, "0")}-${today.getFullYear()} to ${String(
-      today.getDate(),
-    ).padStart(2, "0")}-${String(today.getMonth() + 1).padStart(2, "0")}-${today.getFullYear()}`;
+    periodLabel ?? `${formatDDMMYYYY(firstOfMonth)} to ${formatDDMMYYYY(today)}`;
 
   // ---- Layout constants
   const HEADER_H = 18;
