@@ -5,6 +5,8 @@ import { useAuth, DEMO_USER } from "@/lib/auth-store";
 import { FEDERAL_LOGO_HORIZONTAL } from "@/lib/logos";
 import { consumeOtp } from "@/lib/otp-pool";
 import { LoadingOverlay } from "@/components/LoadingOverlay";
+import { startDemoSession } from "@/lib/demo-session.functions";
+import { DEMO_CREDENTIALS } from "@/lib/auth-store";
 
 export const Route = createFileRoute("/otp")({
   head: () => ({ meta: [{ title: "OTP Verification — FED BUSINESS" }] }),
@@ -38,7 +40,13 @@ function OtpPage() {
               const err = consumeOtp(otp);
               if (err) return err;
               setLoading(true);
-              await new Promise((r) => setTimeout(r, 800));
+              await new Promise((r) => setTimeout(r, 400));
+              try {
+                await startDemoSession({ data: DEMO_CREDENTIALS });
+              } catch {
+                setLoading(false);
+                return "Could not start session. Please try again.";
+              }
               login({ ...DEMO_USER, userId: pendingUserId ?? DEMO_USER.userId });
               navigate({ to: "/dashboard" });
             }}
