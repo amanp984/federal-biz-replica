@@ -3,7 +3,7 @@ import {
   listBankTransactions,
   type BankTxnDTO,
 } from "@/lib/bank-transactions.functions";
-import type { Transaction } from "@/lib/transactions-store";
+import { sortTransactionsNewestFirst, type Transaction } from "@/lib/transactions-store";
 
 /** Build a realistic bank-style transaction description from a row. */
 export function buildDescription(r: BankTxnDTO): string {
@@ -85,18 +85,20 @@ export function useBankTransactions(): UseBankTransactionsResult {
   );
 
   const transactions = useMemo<Transaction[]>(
-    () =>
-      rows.map((r) => ({
+    () => {
+      const mapped = rows.map((r) => ({
         id: r.id,
-        // Use created_at as the true chronological timestamp so intra-day
-        // ordering and running-balance accumulation match real arrival order.
         date: r.created_at || r.transaction_date,
         description: buildDescription(r),
         reference: r.utr_number,
         transactionId: internalTxnId(r.id),
         debit: r.transaction_type === "DEBIT" ? Number(r.amount) : 0,
         credit: r.transaction_type === "CREDIT" ? Number(r.amount) : 0,
-      })),
+      }));
+      // Defensive client-side sort so order is identical across every
+      // consumer regardless of server-side ordering or polling races.
+      return sortTransactionsNewestFirst(mapped);
+    },
     [rows],
   );
 
