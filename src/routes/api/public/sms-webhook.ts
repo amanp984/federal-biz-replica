@@ -85,7 +85,7 @@ export const Route = createFileRoute("/api/public/sms-webhook")({
               return json({ ok: false, error: "duplicate_utr", utr_number: direct.data.utr_number }, 409);
             }
             console.error("[sms-webhook] insert error", error);
-            return json({ ok: false, error: error.message }, 500);
+            return json({ ok: false, error: "database_error" }, 500);
           }
           console.log("[sms-webhook] direct insert", data.id);
           return json({ ok: true, source: "direct", transaction: data }, 201);
@@ -135,7 +135,7 @@ export const Route = createFileRoute("/api/public/sms-webhook")({
             return json({ ok: false, error: "duplicate_utr", utr_number: parsed.utr_number }, 409);
           }
           console.error("[sms-webhook] insert error (sms)", error);
-          return json({ ok: false, error: error.message }, 500);
+          return json({ ok: false, error: "database_error" }, 500);
         }
         console.log("[sms-webhook] sms insert", data.id, parsed.payment_mode);
         return json(
