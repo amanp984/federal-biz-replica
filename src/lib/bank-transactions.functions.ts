@@ -22,7 +22,8 @@ export const listBankTransactions = createServerFn({ method: "GET" }).handler(
       .select(
         "id, transaction_date, transaction_type, payment_mode, account_holder_name, utr_number, beneficiary_account_last_digits, amount, created_at",
       )
-      .order("created_at", { ascending: false });
+      .order("created_at", { ascending: false })
+      .order("id", { ascending: false });
     if (error) throw new Error(error.message);
     return (data ?? []) as BankTxnDTO[];
   },

@@ -50,17 +50,33 @@ export function computeBalance(txs: Transaction[]) {
   return txs.reduce((bal, t) => bal + (t.credit || 0) - (t.debit || 0), 0);
 }
 
+/**
+ * Centralized newest-first comparator used by EVERY consumer
+ * (dashboard, statements, transactions, account-details, PDF, CSV).
+ * Primary: date DESC (date is created_at from the row).
+ * Secondary: id DESC (stable tiebreak for identical timestamps).
+ */
+export function sortTransactionsNewestFirst<T extends { id: string; date: string }>(
+  txs: T[],
+): T[] {
+  return [...txs].sort((a, b) => {
+    const tb = new Date(b.date).getTime() - new Date(a.date).getTime();
+    if (tb !== 0) return tb;
+    return b.id.localeCompare(a.id);
+  });
+}
+
 /** Returns transactions with a running balance, oldest -> newest balance accumulation. */
 export function withRunningBalance(txs: Transaction[]) {
-  const sorted = [...txs].sort(
-    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
-  );
+  // Use the same comparator as everywhere else, then reverse for oldest-first
+  // accumulation so the running balance matches display order exactly.
+  const newestFirst = sortTransactionsNewestFirst(txs);
+  const oldestFirst = [...newestFirst].reverse();
   let bal = 0;
-  const withBal = sorted.map((t) => {
+  const withBal = oldestFirst.map((t) => {
     bal += (t.credit || 0) - (t.debit || 0);
     return { ...t, balance: bal };
   });
-  // return newest-first for display
   return withBal.reverse();
 }
 
