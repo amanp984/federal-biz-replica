@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { Eye, EyeOff, Download, ChevronRight, ChevronLeft, ArrowLeftRight, Receipt, Smartphone, CreditCard } from "lucide-react";
 import { PageHeader } from "@/components/PageHeader";
 import { useAuth } from "@/lib/auth-store";
-import { formatINR } from "@/lib/transactions-store";
+import { formatINR, withRunningBalance } from "@/lib/transactions-store";
 import { downloadStatementPDF } from "@/lib/pdf";
 import { useBankTransactions } from "@/lib/use-bank-transactions";
 
@@ -17,17 +17,10 @@ function Dashboard() {
   const { user } = useAuth();
   const { transactions, balance } = useBankTransactions();
   const [showBal, setShowBal] = useState(true);
-  const recent = useMemo(() => {
-    const sorted = [...transactions].sort(
-      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
-    );
-    let bal = 0;
-    const withBal = sorted.map((t) => {
-      bal += (t.credit || 0) - (t.debit || 0);
-      return { ...t, balance: bal };
-    });
-    return withBal.reverse().slice(0, 5);
-  }, [transactions]);
+  const recent = useMemo(
+    () => withRunningBalance(transactions).slice(0, 5),
+    [transactions],
+  );
 
   if (!user) return null;
 
