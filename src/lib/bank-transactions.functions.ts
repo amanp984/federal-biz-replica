@@ -14,6 +14,8 @@ export interface BankTxnDTO {
 
 export const listBankTransactions = createServerFn({ method: "GET" }).handler(
   async (): Promise<BankTxnDTO[]> => {
+    const { assertDemoSession } = await import("@/lib/demo-session.server");
+    assertDemoSession();
     const { supabaseAdmin } = await import(
       "@/integrations/supabase/client.server"
     );
