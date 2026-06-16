@@ -3,6 +3,7 @@
  * swap the internals for Supabase Auth without changing call sites.
  */
 import { useAuth, DEMO_CREDENTIALS, DEMO_USER, type User } from "@/lib/auth-store";
+import { endDemoSession } from "@/lib/demo-session.functions";
 
 export interface AuthService {
   signIn(userId: string, password: string): Promise<{ user: User } | { error: string }>;
@@ -18,6 +19,11 @@ export const authService: AuthService = {
     return { user: { ...DEMO_USER, userId } };
   },
   async signOut() {
+    try {
+      await endDemoSession();
+    } catch {
+      // Best-effort cookie clear; ignore network errors on sign-out.
+    }
     useAuth.getState().logout();
   },
   currentUser() {
