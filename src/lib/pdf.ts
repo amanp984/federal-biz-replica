@@ -52,7 +52,9 @@ export function downloadStatementPDF(
 
   // ---- Layout constants
   const HEADER_H = 18;
+  const COMPACT_HEADER_H = 14;
   const INFO_H = 50;
+  const TOP_TILE_H = 18;
   const FOOTER_H = 12;
   const TABLE_HEAD_H = 8;
   const ROW_H = 7;
@@ -93,6 +95,31 @@ export function downloadStatementPDF(
     doc.setFontSize(7.5);
     doc.text(`Generated: ${today.toLocaleString("en-IN")}`, W - M, 13.5, { align: "right" });
     doc.text("support@fedbusiness.com  |  1800-425-0000", W - M, 17, { align: "right" });
+  };
+
+  // Compact header for continuation pages — no full info block.
+  const drawCompactHeader = (pageNum: number) => {
+    doc.setFillColor(28, 65, 165);
+    doc.rect(0, 0, W, COMPACT_HEADER_H, "F");
+    doc.setFillColor(245, 158, 11);
+    doc.rect(0, COMPACT_HEADER_H, W, 1.2, "F");
+
+    doc.setTextColor(255);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(12);
+    doc.text("FED BUSINESS", M, 9);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8.5);
+    doc.text("Statement of Account (continued)", M + 60, 9);
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(7.8);
+    doc.text(
+      `A/C: ${user.accountNumber}   |   Period: ${period}   |   Page ${pageNum}`,
+      W - M,
+      9,
+      { align: "right" },
+    );
   };
 
   const drawInfoBlock = () => {
@@ -159,6 +186,32 @@ export function downloadStatementPDF(
     writeCol(right, midX + 3, midX + 45, colHalfW - 50);
   };
 
+  // Page-1 summary tiles: Opening, Total Credits, Total Debits, Closing.
+  const drawTopSummary = (yTop: number) => {
+    const tileW = (innerW - 9) / 4;
+    const tiles: [string, string][] = [
+      ["Opening Balance", formatINRPdf(opening)],
+      ["Total Credits", formatINRPdf(totalCredit)],
+      ["Total Debits", formatINRPdf(totalDebit)],
+      ["Closing Balance", formatINRPdf(closing)],
+    ];
+    tiles.forEach(([label, val], i) => {
+      const tx = M + i * (tileW + 3);
+      doc.setFillColor(248, 250, 253);
+      doc.setDrawColor(210);
+      doc.setLineWidth(0.2);
+      doc.rect(tx, yTop, tileW, TOP_TILE_H, "FD");
+      doc.setTextColor(110);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(7.5);
+      doc.text(label.toUpperCase(), tx + 3, yTop + 6);
+      doc.setTextColor(28, 65, 165);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(11);
+      doc.text(val, tx + 3, yTop + 13.5);
+    });
+  };
+
   const drawTableHeader = (y: number) => {
     doc.setFillColor(28, 65, 165);
     doc.rect(M, y, innerW, TABLE_HEAD_H, "F");
@@ -205,11 +258,20 @@ export function downloadStatementPDF(
     doc.text(`Page ${pageNum} of ${pageTotal}`, W - M, fy + 9, { align: "right" });
   };
 
+  let pageNum = 0;
   const startPage = (first = false) => {
     if (!first) doc.addPage();
-    drawHeader();
-    drawInfoBlock();
-    const tableY = HEADER_H + 4 + INFO_H + 4;
+    pageNum += 1;
+    if (pageNum === 1) {
+      drawHeader();
+      drawInfoBlock();
+      const tilesY = HEADER_H + 4 + INFO_H + 4;
+      drawTopSummary(tilesY);
+      const tableY = tilesY + TOP_TILE_H + 4;
+      return drawTableHeader(tableY);
+    }
+    drawCompactHeader(pageNum);
+    const tableY = COMPACT_HEADER_H + 6;
     return drawTableHeader(tableY);
   };
 
