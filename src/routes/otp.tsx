@@ -43,9 +43,12 @@ function OtpPage() {
               await new Promise((r) => setTimeout(r, 400));
               try {
                 await startDemoSession({ data: DEMO_CREDENTIALS });
-              } catch {
+              } catch (e) {
                 setLoading(false);
-                return "Could not start session. Please try again.";
+                const msg =
+                  e instanceof Error ? e.message : "unknown_error";
+                console.error("[otp] startDemoSession failed:", e);
+                return `Could not start session: ${msg}`;
               }
               login({ ...DEMO_USER, userId: pendingUserId ?? DEMO_USER.userId });
               navigate({ to: "/dashboard" });
