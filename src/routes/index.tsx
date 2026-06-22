@@ -3,8 +3,9 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Eye, EyeOff, Phone, Calculator, HelpCircle, MoreHorizontal, Globe, RefreshCw } from "lucide-react";
 import { FEDERAL_LOGO_FULL, FEDERAL_LOGO_HORIZONTAL } from "@/lib/logos";
-import { useAuth } from "@/lib/auth-store";
+import { useAuth, DEMO_CREDENTIALS, DEMO_USER } from "@/lib/auth-store";
 import { LoadingOverlay } from "@/components/LoadingOverlay";
+import { startDemoSession } from "@/lib/demo-session.functions";
 import fdBanner from "@/assets/banners/fd.asset.json";
 import carBanner from "@/assets/banners/car.asset.json";
 import personalBanner from "@/assets/banners/personal.asset.json";
@@ -35,12 +36,9 @@ const BANNERS = [
   { key: "investment", url: investmentBanner.url, alt: "Investment — Invest Today, Secure Tomorrow" },
 ];
 
-const VALID_USER_ID = "Ram825520";
-const VALID_PASSWORD = "Guru@1999";
-
 function LoginPage() {
   const navigate = useNavigate();
-  const { setPending, isAuthenticated } = useAuth();
+  const { login, isAuthenticated } = useAuth();
   const [userId, setUserId] = useState("");
   const [password, setPassword] = useState("");
   const [showPwd, setShowPwd] = useState(false);
@@ -63,26 +61,31 @@ function LoginPage() {
     return () => clearInterval(t);
   }, []);
 
-  const submit = (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!userId || !password) return setErr("Please enter User ID and Password.");
-    const credsOk = userId === VALID_USER_ID && password === VALID_PASSWORD;
+    const userOk = userId === DEMO_CREDENTIALS.userId;
+    const passOk = password === DEMO_CREDENTIALS.password;
+    if (!userOk && !passOk) return setErr("Invalid Login Credentials");
+    if (!userOk) return setErr("Invalid User ID");
+    if (!passOk) return setErr("Incorrect Password");
     const captchaOk = captcha.trim().toUpperCase() === captchaCode;
-    if (!credsOk && !captchaOk) {
-      setCaptchaCode(genCaptcha()); setCaptcha("");
-      return setErr("Incorrect User ID/Password and Captcha");
-    }
-    if (!credsOk) return setErr("Incorrect User ID or Password");
     if (!captchaOk) {
-      setCaptchaCode(genCaptcha()); setCaptcha("");
+      setCaptchaCode(genCaptcha());
+      setCaptcha("");
       return setErr("Incorrect Captcha");
     }
     setErr("");
-    setPending(userId);
     setLoading(true);
-    window.setTimeout(() => {
-      navigate({ to: "/otp" });
-    }, 1000);
+    try {
+      await startDemoSession({ data: DEMO_CREDENTIALS });
+    } catch (e) {
+      setLoading(false);
+      const msg = e instanceof Error ? e.message : "unknown_error";
+      return setErr(`Could not start session: ${msg}`);
+    }
+    login({ ...DEMO_USER, userId });
+    navigate({ to: "/dashboard" });
   };
 
   return (
