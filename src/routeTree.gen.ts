@@ -12,7 +12,6 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as SecurityRouteImport } from './routes/security'
 import { Route as PrivacyRouteImport } from './routes/privacy'
-import { Route as OtpRouteImport } from './routes/otp'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as DisclaimerRouteImport } from './routes/disclaimer'
 import { Route as AppRouteImport } from './routes/_app'
@@ -51,11 +50,6 @@ const SecurityRoute = SecurityRouteImport.update({
 const PrivacyRoute = PrivacyRouteImport.update({
   id: '/privacy',
   path: '/privacy',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const OtpRoute = OtpRouteImport.update({
-  id: '/otp',
-  path: '/otp',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
@@ -182,7 +176,6 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/disclaimer': typeof DisclaimerRoute
   '/forgot-password': typeof ForgotPasswordRoute
-  '/otp': typeof OtpRoute
   '/privacy': typeof PrivacyRoute
   '/security': typeof SecurityRoute
   '/terms': typeof TermsRoute
@@ -211,7 +204,6 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/disclaimer': typeof DisclaimerRoute
   '/forgot-password': typeof ForgotPasswordRoute
-  '/otp': typeof OtpRoute
   '/privacy': typeof PrivacyRoute
   '/security': typeof SecurityRoute
   '/terms': typeof TermsRoute
@@ -242,7 +234,6 @@ export interface FileRoutesById {
   '/_app': typeof AppRouteWithChildren
   '/disclaimer': typeof DisclaimerRoute
   '/forgot-password': typeof ForgotPasswordRoute
-  '/otp': typeof OtpRoute
   '/privacy': typeof PrivacyRoute
   '/security': typeof SecurityRoute
   '/terms': typeof TermsRoute
@@ -273,7 +264,6 @@ export interface FileRouteTypes {
     | '/'
     | '/disclaimer'
     | '/forgot-password'
-    | '/otp'
     | '/privacy'
     | '/security'
     | '/terms'
@@ -302,7 +292,6 @@ export interface FileRouteTypes {
     | '/'
     | '/disclaimer'
     | '/forgot-password'
-    | '/otp'
     | '/privacy'
     | '/security'
     | '/terms'
@@ -332,7 +321,6 @@ export interface FileRouteTypes {
     | '/_app'
     | '/disclaimer'
     | '/forgot-password'
-    | '/otp'
     | '/privacy'
     | '/security'
     | '/terms'
@@ -363,7 +351,6 @@ export interface RootRouteChildren {
   AppRoute: typeof AppRouteWithChildren
   DisclaimerRoute: typeof DisclaimerRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
-  OtpRoute: typeof OtpRoute
   PrivacyRoute: typeof PrivacyRoute
   SecurityRoute: typeof SecurityRoute
   TermsRoute: typeof TermsRoute
@@ -391,13 +378,6 @@ declare module '@tanstack/react-router' {
       path: '/privacy'
       fullPath: '/privacy'
       preLoaderRoute: typeof PrivacyRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/otp': {
-      id: '/otp'
-      path: '/otp'
-      fullPath: '/otp'
-      preLoaderRoute: typeof OtpRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/forgot-password': {
@@ -622,7 +602,6 @@ const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRouteWithChildren,
   DisclaimerRoute: DisclaimerRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
-  OtpRoute: OtpRoute,
   PrivacyRoute: PrivacyRoute,
   SecurityRoute: SecurityRoute,
   TermsRoute: TermsRoute,

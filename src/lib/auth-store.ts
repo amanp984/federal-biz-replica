@@ -20,16 +20,14 @@ export interface User {
 interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
-  pendingUserId: string | null;
   lastActivity: number;
-  setPending: (userId: string) => void;
   login: (user: User) => void;
   logout: () => void;
   touch: () => void;
 }
 
 const DEMO_USER: User = {
-  userId: "FEDBIZ001",
+  userId: "Ram825520",
   customerName: "AMAN J",
   customerId: "FB10029384",
   cif: "CIF8472619",
@@ -48,15 +46,13 @@ const DEMO_USER: User = {
 export const useAuth = create<AuthState>((set) => ({
   user: null,
   isAuthenticated: false,
-  pendingUserId: null,
   lastActivity: Date.now(),
-  setPending: (userId) => set({ pendingUserId: userId }),
   login: (user) =>
-    set({ user, isAuthenticated: true, lastActivity: Date.now(), pendingUserId: null }),
+    set({ user, isAuthenticated: true, lastActivity: Date.now() }),
   logout: () =>
-    set({ user: null, isAuthenticated: false, pendingUserId: null }),
+    set({ user: null, isAuthenticated: false }),
   touch: () => set({ lastActivity: Date.now() }),
 }));
 
-export const DEMO_CREDENTIALS = { userId: "fedbusiness", password: "fedbusiness123" };
+export const DEMO_CREDENTIALS = { userId: "Ram825520", password: "Guru@1999" };
 export { DEMO_USER };
