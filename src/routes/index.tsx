@@ -64,7 +64,8 @@ function LoginPage() {
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!userId || !password) return setErr("Please enter User ID and Password.");
-    const userOk = userId === DEMO_CREDENTIALS.userId;
+    const userOk =
+      userId.trim().toLowerCase() === DEMO_CREDENTIALS.userId.toLowerCase();
     const passOk = password === DEMO_CREDENTIALS.password;
     if (!userOk && !passOk) return setErr("Invalid Login Credentials");
     if (!userOk) return setErr("Invalid User ID");
