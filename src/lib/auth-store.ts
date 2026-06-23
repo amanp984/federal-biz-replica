@@ -27,16 +27,16 @@ interface AuthState {
 }
 
 const DEMO_USER: User = {
-  userId: "Ram825520",
+  userId: "Fed99265419",
   customerName: "AMAN J",
-  customerId: "FB10029384",
-  cif: "CIF8472619",
-  accountNumber: "99980128569460",
-  ifsc: "FDRL0083457",
+  customerId: "Fed99265419",
+  cif: "CIF864399782",
+  accountNumber: "3755684427690",
+  ifsc: "FDRL0085586",
   branch: "Mumbai Main Office",
   branchAddress: "FED BUSINESS, Fort Office, Mumbai - 400001",
   accountType: "Current",
-  mobile: "+91 98******12",
+  mobile: "+91 9873225439",
   email: "ra*****@gmail.com",
   kyc: "KYC-9384-2019",
   address: "Plot 21, Sector 14, Mumbai, Maharashtra - 400706",
@@ -54,5 +54,5 @@ export const useAuth = create<AuthState>((set) => ({
   touch: () => set({ lastActivity: Date.now() }),
 }));
 
-export const DEMO_CREDENTIALS = { userId: "Ram825520", password: "Guru@1999" };
+export const DEMO_CREDENTIALS = { userId: "Fed99265419", password: "Praja@1999" };
 export { DEMO_USER };
