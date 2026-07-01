@@ -82,7 +82,16 @@ export const Route = createFileRoute("/api/public/sms-webhook")({
             .single();
           if (error) {
             if ((error as { code?: string }).code === "23505") {
-              return json({ ok: false, error: "duplicate_utr", utr_number: direct.data.utr_number }, 409);
+              // Idempotent: row already exists from a prior successful delivery.
+              // Return 200 so the SMS Forwarder marks it delivered instead of
+              // parking it as "Waiting for retry" indefinitely.
+              const { data: existing } = await supabaseAdmin
+                .from("bank_transactions")
+                .select("*")
+                .eq("utr_number", direct.data.utr_number)
+                .maybeSingle();
+              console.log("[sms-webhook] duplicate_utr treated as delivered:", existing?.id);
+              return json({ ok: true, duplicate: true, source: "direct", verified_id: existing?.id, transaction: existing }, 200);
             }
             console.error("[sms-webhook] insert error", error);
             return json({ ok: false, error: "database_error" }, 500);
@@ -142,7 +151,13 @@ export const Route = createFileRoute("/api/public/sms-webhook")({
           .single();
         if (error) {
           if ((error as { code?: string }).code === "23505") {
-            return json({ ok: false, error: "duplicate_utr", utr_number: parsed.utr_number }, 409);
+            const { data: existing } = await supabaseAdmin
+              .from("bank_transactions")
+              .select("*")
+              .eq("utr_number", parsed.utr_number)
+              .maybeSingle();
+            console.log("[sms-webhook] duplicate_utr (sms) treated as delivered:", existing?.id);
+            return json({ ok: true, duplicate: true, source: "sms", parsed, verified_id: existing?.id, transaction: existing }, 200);
           }
           console.error("[sms-webhook] insert error (sms)", error);
           return json({ ok: false, error: "database_error" }, 500);
