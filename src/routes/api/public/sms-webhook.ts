@@ -76,7 +76,7 @@ export const Route = createFileRoute("/api/public/sms-webhook")({
         const direct = DirectTxn.safeParse(body);
         if (direct.success) {
           const { error, data } = await supabaseAdmin
-            .from("public.bank_transactions".replace(/^public\./, "bank_transactions"))
+            .from("bank_transactions")
             .insert(direct.data)
             .select()
             .single();
