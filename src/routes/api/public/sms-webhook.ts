@@ -87,8 +87,18 @@ export const Route = createFileRoute("/api/public/sms-webhook")({
             console.error("[sms-webhook] insert error", error);
             return json({ ok: false, error: "database_error" }, 500);
           }
-          console.log("[sms-webhook] direct insert", data.id);
-          return json({ ok: true, source: "direct", transaction: data }, 201);
+          // Verify: re-SELECT the row from public.bank_transactions by id.
+          const { data: verified, error: verifyErr } = await supabaseAdmin
+            .from("bank_transactions")
+            .select("*")
+            .eq("id", data.id)
+            .single();
+          if (verifyErr || !verified) {
+            console.error("[sms-webhook] verify failed", { id: data.id, verifyErr });
+            return json({ ok: false, error: "insert_not_verified", id: data.id }, 500);
+          }
+          console.log("[sms-webhook] direct insert verified in public.bank_transactions:", verified.id);
+          return json({ ok: true, source: "direct", verified_id: verified.id, transaction: verified }, 200);
         }
 
         // SMS forwarder shape
@@ -137,10 +147,24 @@ export const Route = createFileRoute("/api/public/sms-webhook")({
           console.error("[sms-webhook] insert error (sms)", error);
           return json({ ok: false, error: "database_error" }, 500);
         }
-        console.log("[sms-webhook] sms insert", data.id, parsed.payment_mode);
+        // Verify: re-SELECT the row from public.bank_transactions by id.
+        const { data: verified, error: verifyErr } = await supabaseAdmin
+          .from("bank_transactions")
+          .select("*")
+          .eq("id", data.id)
+          .single();
+        if (verifyErr || !verified) {
+          console.error("[sms-webhook] verify failed (sms)", { id: data.id, verifyErr });
+          return json({ ok: false, error: "insert_not_verified", id: data.id }, 500);
+        }
+        console.log(
+          "[sms-webhook] sms insert verified in public.bank_transactions:",
+          verified.id,
+          parsed.payment_mode,
+        );
         return json(
-          { ok: true, source: "sms", parsed, transaction: data },
-          201,
+          { ok: true, source: "sms", parsed, verified_id: verified.id, transaction: verified },
+          200,
         );
       },
     },
