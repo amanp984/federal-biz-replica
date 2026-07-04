@@ -54,11 +54,6 @@ export function useBankTransactions(): UseBankTransactionsResult {
       try {
         const d = await listBankTransactions();
         if (!active) return;
-        // TEMP DEBUG: surface count returned from server for cross-screen audit.
-        if (typeof window !== "undefined") {
-          // eslint-disable-next-line no-console
-          console.log("[txn-audit] listBankTransactions rows:", (d ?? []).length);
-        }
         setRows((d ?? []) as BankTxnDTO[]);
         setError(null);
       } catch (e) {

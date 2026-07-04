@@ -21,12 +21,12 @@ interface Beneficiary {
 
 const BENS: Beneficiary[] = [
   { name: "Rahul Sharma",         bank: "HDFC Bank",        acct: "XXXXXX4582", ifsc: "HDFC0001234", type: "Savings", added: "2025-04-12", lastTransfer: "2026-06-05", status: "Active" },
-  { name: "Sneha Verma",          bank: "FED BUSINESS",     acct: "XXXXXX9271", ifsc: "FDRL0085586", type: "Current", added: "2025-05-02", lastTransfer: "2026-06-04", status: "Active" },
+  { name: "Sneha Verma",          bank: "FED BUSINESS",     acct: "XXXXXX9271", ifsc: "FDRL0083457", type: "Current", added: "2025-05-02", lastTransfer: "2026-06-04", status: "Active" },
   { name: "Pooja Singh",          bank: "ICICI Bank",       acct: "XXXXXX1845", ifsc: "ICIC0004567", type: "Savings", added: "2025-05-30", lastTransfer: "2026-05-28", status: "Active" },
   { name: "Amit Patel",           bank: "State Bank of India", acct: "XXXXXX6723", ifsc: "SBIN0005678", type: "Current", added: "2025-06-08", lastTransfer: "2026-06-01", status: "Active" },
   { name: "Acme Vendors Pvt Ltd", bank: "Axis Bank",        acct: "XXXXXX3019", ifsc: "UTIB0009876", type: "Current", added: "2025-06-15", lastTransfer: "2026-06-06", status: "Active" },
   { name: "Priya Nair",           bank: "Kotak Mahindra",   acct: "XXXXXX8842", ifsc: "KKBK0002345", type: "Savings", added: "2025-06-22", lastTransfer: "2026-05-21", status: "Active" },
-  { name: "Globex Logistics",     bank: "FED BUSINESS",     acct: "XXXXXX5510", ifsc: "FDRL0085586", type: "Current", added: "2025-07-01", lastTransfer: "2026-06-03", status: "Active" },
+  { name: "Globex Logistics",     bank: "FED BUSINESS",     acct: "XXXXXX5510", ifsc: "FDRL0083457", type: "Current", added: "2025-07-01", lastTransfer: "2026-06-03", status: "Active" },
   { name: "Vikram Reddy",         bank: "Yes Bank",         acct: "XXXXXX2134", ifsc: "YESB0003456", type: "Salary",  added: "2025-07-09", lastTransfer: "2026-04-18", status: "Inactive" },
   { name: "Initech Solutions",    bank: "IndusInd Bank",    acct: "XXXXXX7765", ifsc: "INDB0007890", type: "Current", added: "2025-07-15", lastTransfer: "2026-05-30", status: "Active" },
   { name: "Nikita Kapoor",        bank: "HDFC Bank",        acct: "XXXXXX9387", ifsc: "HDFC0009912", type: "Savings", added: "2025-07-21", lastTransfer: "2026-05-12", status: "Active" },

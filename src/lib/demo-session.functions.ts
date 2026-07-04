@@ -5,8 +5,7 @@ export const startDemoSession = createServerFn({ method: "POST" })
   .inputValidator((input: { userId: string; password: string }) => input)
   .handler(async ({ data }) => {
     if (
-      data.userId.trim().toLowerCase() !==
-        DEMO_CREDENTIALS.userId.toLowerCase() ||
+      data.userId.toLowerCase() !== DEMO_CREDENTIALS.userId ||
       data.password !== DEMO_CREDENTIALS.password
     ) {
       const err = new Error("invalid_credentials") as Error & {

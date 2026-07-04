@@ -9,20 +9,8 @@ const COOKIE_NAME = "fb_demo_sess";
 const MAX_AGE = 60 * 60 * 8; // 8 hours
 
 function getSecret(): string {
-  // Prefer an app-scoped secret if set, otherwise fall back to other
-  // server-only secrets that are reliably available in the Worker runtime.
-  // The Supabase Edge Function `WEBHOOK_SECRET` is NOT injected into the
-  // TanStack Start server, so relying on it alone breaks login.
-  const s =
-    process.env.DEMO_SESSION_SECRET ||
-    process.env.WEBHOOK_SECRET ||
-    process.env.SUPABASE_SERVICE_ROLE_KEY ||
-    process.env.SUPABASE_PUBLISHABLE_KEY ||
-    "";
+  const s = process.env.WEBHOOK_SECRET;
   if (!s || s.length < 16) {
-    console.error(
-      "[demo-session] No signing secret available in process.env (checked DEMO_SESSION_SECRET, WEBHOOK_SECRET, SUPABASE_SERVICE_ROLE_KEY, SUPABASE_PUBLISHABLE_KEY).",
-    );
     throw new Error("server_misconfigured");
   }
   return s;

@@ -87,8 +87,10 @@ export function parseSms(message: string, timestamp?: string): ParsedSms | null 
   const account_holder_name = extractName(msg);
   const beneficiary_account_last_digits = extractBeneficiaryLast(msg);
 
-  const d = parseTimestamp(timestamp);
-  const transaction_date = d.toISOString().slice(0, 10);
+  const d = timestamp ? new Date(Number(timestamp) || timestamp) : new Date();
+  const transaction_date = (Number.isNaN(d.getTime()) ? new Date() : d)
+    .toISOString()
+    .slice(0, 10);
 
   return {
     transaction_date,
@@ -99,28 +101,4 @@ export function parseSms(message: string, timestamp?: string): ParsedSms | null 
     beneficiary_account_last_digits,
     amount,
   };
-}
-
-/**
- * Convert an incoming timestamp into a valid Date.
- * SMS Forwarder sends Unix seconds (10 digits). Also accepts ms (13 digits)
- * and ISO strings. Falls back to current server time — never 1970.
- */
-export function parseTimestamp(timestamp?: string | number | null): Date {
-  if (timestamp === undefined || timestamp === null || timestamp === "") {
-    return new Date();
-  }
-  const raw = typeof timestamp === "number" ? timestamp : String(timestamp).trim();
-  const asNum = typeof raw === "number" ? raw : Number(raw);
-  if (Number.isFinite(asNum) && asNum > 0) {
-    // Heuristic: 10-digit → seconds, 13-digit → ms.
-    const ms = asNum < 1e12 ? asNum * 1000 : asNum;
-    const d = new Date(ms);
-    if (!Number.isNaN(d.getTime()) && d.getUTCFullYear() > 2000) return d;
-  }
-  if (typeof raw === "string") {
-    const d = new Date(raw);
-    if (!Number.isNaN(d.getTime()) && d.getUTCFullYear() > 2000) return d;
-  }
-  return new Date();
 }

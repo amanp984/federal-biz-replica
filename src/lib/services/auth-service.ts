@@ -13,10 +13,7 @@ export interface AuthService {
 
 export const authService: AuthService = {
   async signIn(userId, password) {
-    if (
-      userId.trim().toLowerCase() !== DEMO_CREDENTIALS.userId.toLowerCase() ||
-      password !== DEMO_CREDENTIALS.password
-    ) {
+    if (userId.toLowerCase() !== DEMO_CREDENTIALS.userId || password !== DEMO_CREDENTIALS.password) {
       return { error: "Invalid credentials" };
     }
     return { user: { ...DEMO_USER, userId } };

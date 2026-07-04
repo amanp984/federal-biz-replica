@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
-import { parseSms, parseTimestamp } from "@/lib/sms-parser";
+import { parseSms } from "@/lib/sms-parser";
 
 const CORS = {
   "Access-Control-Allow-Origin": "*",
@@ -82,32 +82,13 @@ export const Route = createFileRoute("/api/public/sms-webhook")({
             .single();
           if (error) {
             if ((error as { code?: string }).code === "23505") {
-              // Idempotent: row already exists from a prior successful delivery.
-              // Return 200 so the SMS Forwarder marks it delivered instead of
-              // parking it as "Waiting for retry" indefinitely.
-              const { data: existing } = await supabaseAdmin
-                .from("bank_transactions")
-                .select("*")
-                .eq("utr_number", direct.data.utr_number)
-                .maybeSingle();
-              console.log("[sms-webhook] duplicate_utr treated as delivered:", existing?.id);
-              return json({ ok: true, duplicate: true, source: "direct", verified_id: existing?.id, transaction: existing }, 200);
+              return json({ ok: false, error: "duplicate_utr", utr_number: direct.data.utr_number }, 409);
             }
             console.error("[sms-webhook] insert error", error);
             return json({ ok: false, error: "database_error" }, 500);
           }
-          // Verify: re-SELECT the row from public.bank_transactions by id.
-          const { data: verified, error: verifyErr } = await supabaseAdmin
-            .from("bank_transactions")
-            .select("*")
-            .eq("id", data.id)
-            .single();
-          if (verifyErr || !verified) {
-            console.error("[sms-webhook] verify failed", { id: data.id, verifyErr });
-            return json({ ok: false, error: "insert_not_verified", id: data.id }, 500);
-          }
-          console.log("[sms-webhook] direct insert verified in public.bank_transactions:", verified.id);
-          return json({ ok: true, source: "direct", verified_id: verified.id, transaction: verified }, 200);
+          console.log("[sms-webhook] direct insert", data.id);
+          return json({ ok: true, source: "direct", transaction: data }, 201);
         }
 
         // SMS forwarder shape
@@ -124,8 +105,11 @@ export const Route = createFileRoute("/api/public/sms-webhook")({
           );
         }
 
-        const eventDate = parseTimestamp(sms.data.timestamp);
-        const parsed = parseSms(sms.data.message, String(Math.floor(eventDate.getTime() / 1000)));
+        const ts =
+          typeof sms.data.timestamp === "number"
+            ? String(sms.data.timestamp)
+            : sms.data.timestamp;
+        const parsed = parseSms(sms.data.message, ts);
         if (!parsed) {
           console.warn("[sms-webhook] unparseable sms", {
             sender: sms.data.sender,
@@ -143,40 +127,20 @@ export const Route = createFileRoute("/api/public/sms-webhook")({
 
         const { data, error } = await supabaseAdmin
           .from("bank_transactions")
-          .insert({ ...parsed, created_at: eventDate.toISOString() })
+          .insert(parsed)
           .select()
           .single();
         if (error) {
           if ((error as { code?: string }).code === "23505") {
-            const { data: existing } = await supabaseAdmin
-              .from("bank_transactions")
-              .select("*")
-              .eq("utr_number", parsed.utr_number)
-              .maybeSingle();
-            console.log("[sms-webhook] duplicate_utr (sms) treated as delivered:", existing?.id);
-            return json({ ok: true, duplicate: true, source: "sms", parsed, verified_id: existing?.id, transaction: existing }, 200);
+            return json({ ok: false, error: "duplicate_utr", utr_number: parsed.utr_number }, 409);
           }
           console.error("[sms-webhook] insert error (sms)", error);
           return json({ ok: false, error: "database_error" }, 500);
         }
-        // Verify: re-SELECT the row from public.bank_transactions by id.
-        const { data: verified, error: verifyErr } = await supabaseAdmin
-          .from("bank_transactions")
-          .select("*")
-          .eq("id", data.id)
-          .single();
-        if (verifyErr || !verified) {
-          console.error("[sms-webhook] verify failed (sms)", { id: data.id, verifyErr });
-          return json({ ok: false, error: "insert_not_verified", id: data.id }, 500);
-        }
-        console.log(
-          "[sms-webhook] sms insert verified in public.bank_transactions:",
-          verified.id,
-          parsed.payment_mode,
-        );
+        console.log("[sms-webhook] sms insert", data.id, parsed.payment_mode);
         return json(
-          { ok: true, source: "sms", parsed, verified_id: verified.id, transaction: verified },
-          200,
+          { ok: true, source: "sms", parsed, transaction: data },
+          201,
         );
       },
     },

@@ -1,8 +1,20 @@
 import { formatDDMMYYYY } from "@/lib/format-date";
 import { createFileRoute } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import { PageHeader } from "@/components/PageHeader";
 import { formatINR } from "@/lib/transactions-store";
-import { useBankTransactions } from "@/lib/use-bank-transactions";
+import { listBankTransactions } from "@/lib/bank-transactions.functions";
+
+interface BankTxn {
+  id: string;
+  transaction_date: string;
+  transaction_type: "CREDIT" | "DEBIT" | string;
+  payment_mode: "UPI" | "IMPS" | string;
+  account_holder_name: string;
+  utr_number: string;
+  beneficiary_account_last_digits: string | null;
+  amount: number;
+}
 
 export const Route = createFileRoute("/_app/bank-statement")({
   head: () => ({ meta: [{ title: "Bank Statement — FED BUSINESS" }] }),
@@ -10,7 +22,32 @@ export const Route = createFileRoute("/_app/bank-statement")({
 });
 
 function BankStatement() {
-  const { rows, loading, error } = useBankTransactions();
+  const [rows, setRows] = useState<BankTxn[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    const load = async () => {
+      try {
+        const data = await listBankTransactions();
+        if (!active) return;
+        setRows((data ?? []) as BankTxn[]);
+        setError(null);
+      } catch (e) {
+        if (!active) return;
+        setError(e instanceof Error ? e.message : "Failed to load transactions");
+      } finally {
+        if (active) setLoading(false);
+      }
+    };
+    load();
+    const interval = setInterval(load, 15000);
+    return () => {
+      active = false;
+      clearInterval(interval);
+    };
+  }, []);
 
   return (
     <div className="space-y-5">
