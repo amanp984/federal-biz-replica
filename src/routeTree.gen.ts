@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TotpSetupRouteImport } from './routes/totp-setup'
+import { Route as TotpRouteImport } from './routes/totp'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as SecurityRouteImport } from './routes/security'
 import { Route as PrivacyRouteImport } from './routes/privacy'
@@ -42,6 +43,11 @@ import { Route as ApiPublicSmsWebhookRouteImport } from './routes/api/public/sms
 const TotpSetupRoute = TotpSetupRouteImport.update({
   id: '/totp-setup',
   path: '/totp-setup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TotpRoute = TotpRouteImport.update({
+  id: '/totp',
+  path: '/totp',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TermsRoute = TermsRouteImport.update({
@@ -192,6 +198,7 @@ export interface FileRoutesByFullPath {
   '/privacy': typeof PrivacyRoute
   '/security': typeof SecurityRoute
   '/terms': typeof TermsRoute
+  '/totp': typeof TotpRoute
   '/totp-setup': typeof TotpSetupRoute
   '/account-details': typeof AppAccountDetailsRoute
   '/accounts': typeof AppAccountsRoute
@@ -222,6 +229,7 @@ export interface FileRoutesByTo {
   '/privacy': typeof PrivacyRoute
   '/security': typeof SecurityRoute
   '/terms': typeof TermsRoute
+  '/totp': typeof TotpRoute
   '/totp-setup': typeof TotpSetupRoute
   '/account-details': typeof AppAccountDetailsRoute
   '/accounts': typeof AppAccountsRoute
@@ -254,6 +262,7 @@ export interface FileRoutesById {
   '/privacy': typeof PrivacyRoute
   '/security': typeof SecurityRoute
   '/terms': typeof TermsRoute
+  '/totp': typeof TotpRoute
   '/totp-setup': typeof TotpSetupRoute
   '/_app/account-details': typeof AppAccountDetailsRoute
   '/_app/accounts': typeof AppAccountsRoute
@@ -286,6 +295,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/security'
     | '/terms'
+    | '/totp'
     | '/totp-setup'
     | '/account-details'
     | '/accounts'
@@ -316,6 +326,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/security'
     | '/terms'
+    | '/totp'
     | '/totp-setup'
     | '/account-details'
     | '/accounts'
@@ -347,6 +358,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/security'
     | '/terms'
+    | '/totp'
     | '/totp-setup'
     | '/_app/account-details'
     | '/_app/accounts'
@@ -379,6 +391,7 @@ export interface RootRouteChildren {
   PrivacyRoute: typeof PrivacyRoute
   SecurityRoute: typeof SecurityRoute
   TermsRoute: typeof TermsRoute
+  TotpRoute: typeof TotpRoute
   TotpSetupRoute: typeof TotpSetupRoute
   ApiPublicSmsWebhookRoute: typeof ApiPublicSmsWebhookRoute
 }
@@ -390,6 +403,13 @@ declare module '@tanstack/react-router' {
       path: '/totp-setup'
       fullPath: '/totp-setup'
       preLoaderRoute: typeof TotpSetupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/totp': {
+      id: '/totp'
+      path: '/totp'
+      fullPath: '/totp'
+      preLoaderRoute: typeof TotpRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/terms': {
@@ -646,6 +666,7 @@ const rootRouteChildren: RootRouteChildren = {
   PrivacyRoute: PrivacyRoute,
   SecurityRoute: SecurityRoute,
   TermsRoute: TermsRoute,
+  TotpRoute: TotpRoute,
   TotpSetupRoute: TotpSetupRoute,
   ApiPublicSmsWebhookRoute: ApiPublicSmsWebhookRoute,
 }
