@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
-import { parseSms } from "@/lib/sms-parser";
+import { parseSms, parseTimestamp } from "@/lib/sms-parser";
 
 const CORS = {
   "Access-Control-Allow-Origin": "*",
@@ -124,11 +124,8 @@ export const Route = createFileRoute("/api/public/sms-webhook")({
           );
         }
 
-        const ts =
-          typeof sms.data.timestamp === "number"
-            ? String(sms.data.timestamp)
-            : sms.data.timestamp;
-        const parsed = parseSms(sms.data.message, ts);
+        const eventDate = parseTimestamp(sms.data.timestamp);
+        const parsed = parseSms(sms.data.message, String(Math.floor(eventDate.getTime() / 1000)));
         if (!parsed) {
           console.warn("[sms-webhook] unparseable sms", {
             sender: sms.data.sender,
@@ -146,7 +143,7 @@ export const Route = createFileRoute("/api/public/sms-webhook")({
 
         const { data, error } = await supabaseAdmin
           .from("bank_transactions")
-          .insert(parsed)
+          .insert({ ...parsed, created_at: eventDate.toISOString() })
           .select()
           .single();
         if (error) {
