@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Eye, EyeOff, Phone, Calculator, HelpCircle, MoreHorizontal, Globe, RefreshCw } from "lucide-react";
 import { FEDERAL_LOGO_FULL, FEDERAL_LOGO_HORIZONTAL } from "@/lib/logos";
 import { useAuth } from "@/lib/auth-store";
+import { hasTotpSecret } from "@/lib/totp-store";
 import { LoadingOverlay } from "@/components/LoadingOverlay";
 import fdBanner from "@/assets/banners/fd.asset.json";
 import carBanner from "@/assets/banners/car.asset.json";
@@ -81,7 +82,7 @@ function LoginPage() {
     setPending(userId);
     setLoading(true);
     window.setTimeout(() => {
-      navigate({ to: "/otp" });
+      navigate({ to: hasTotpSecret(userId) ? "/totp" : "/totp-setup" });
     }, 1000);
   };
 

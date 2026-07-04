@@ -9,6 +9,8 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TotpSetupRouteImport } from './routes/totp-setup'
+import { Route as TotpRouteImport } from './routes/totp'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as SecurityRouteImport } from './routes/security'
 import { Route as PrivacyRouteImport } from './routes/privacy'
@@ -38,6 +40,16 @@ import { Route as AppAccountsRouteImport } from './routes/_app.accounts'
 import { Route as AppAccountDetailsRouteImport } from './routes/_app.account-details'
 import { Route as ApiPublicSmsWebhookRouteImport } from './routes/api/public/sms-webhook'
 
+const TotpSetupRoute = TotpSetupRouteImport.update({
+  id: '/totp-setup',
+  path: '/totp-setup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TotpRoute = TotpRouteImport.update({
+  id: '/totp',
+  path: '/totp',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
   path: '/terms',
@@ -186,6 +198,8 @@ export interface FileRoutesByFullPath {
   '/privacy': typeof PrivacyRoute
   '/security': typeof SecurityRoute
   '/terms': typeof TermsRoute
+  '/totp': typeof TotpRoute
+  '/totp-setup': typeof TotpSetupRoute
   '/account-details': typeof AppAccountDetailsRoute
   '/accounts': typeof AppAccountsRoute
   '/bank-statement': typeof AppBankStatementRoute
@@ -215,6 +229,8 @@ export interface FileRoutesByTo {
   '/privacy': typeof PrivacyRoute
   '/security': typeof SecurityRoute
   '/terms': typeof TermsRoute
+  '/totp': typeof TotpRoute
+  '/totp-setup': typeof TotpSetupRoute
   '/account-details': typeof AppAccountDetailsRoute
   '/accounts': typeof AppAccountsRoute
   '/bank-statement': typeof AppBankStatementRoute
@@ -246,6 +262,8 @@ export interface FileRoutesById {
   '/privacy': typeof PrivacyRoute
   '/security': typeof SecurityRoute
   '/terms': typeof TermsRoute
+  '/totp': typeof TotpRoute
+  '/totp-setup': typeof TotpSetupRoute
   '/_app/account-details': typeof AppAccountDetailsRoute
   '/_app/accounts': typeof AppAccountsRoute
   '/_app/bank-statement': typeof AppBankStatementRoute
@@ -277,6 +295,8 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/security'
     | '/terms'
+    | '/totp'
+    | '/totp-setup'
     | '/account-details'
     | '/accounts'
     | '/bank-statement'
@@ -306,6 +326,8 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/security'
     | '/terms'
+    | '/totp'
+    | '/totp-setup'
     | '/account-details'
     | '/accounts'
     | '/bank-statement'
@@ -336,6 +358,8 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/security'
     | '/terms'
+    | '/totp'
+    | '/totp-setup'
     | '/_app/account-details'
     | '/_app/accounts'
     | '/_app/bank-statement'
@@ -367,11 +391,27 @@ export interface RootRouteChildren {
   PrivacyRoute: typeof PrivacyRoute
   SecurityRoute: typeof SecurityRoute
   TermsRoute: typeof TermsRoute
+  TotpRoute: typeof TotpRoute
+  TotpSetupRoute: typeof TotpSetupRoute
   ApiPublicSmsWebhookRoute: typeof ApiPublicSmsWebhookRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/totp-setup': {
+      id: '/totp-setup'
+      path: '/totp-setup'
+      fullPath: '/totp-setup'
+      preLoaderRoute: typeof TotpSetupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/totp': {
+      id: '/totp'
+      path: '/totp'
+      fullPath: '/totp'
+      preLoaderRoute: typeof TotpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/terms': {
       id: '/terms'
       path: '/terms'
@@ -626,6 +666,8 @@ const rootRouteChildren: RootRouteChildren = {
   PrivacyRoute: PrivacyRoute,
   SecurityRoute: SecurityRoute,
   TermsRoute: TermsRoute,
+  TotpRoute: TotpRoute,
+  TotpSetupRoute: TotpSetupRoute,
   ApiPublicSmsWebhookRoute: ApiPublicSmsWebhookRoute,
 }
 export const routeTree = rootRouteImport
