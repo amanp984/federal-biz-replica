@@ -5,7 +5,8 @@ import { ShieldCheck, Copy, Check } from "lucide-react";
 import { FEDERAL_LOGO_HORIZONTAL } from "@/lib/logos";
 import { useAuth, DEMO_USER } from "@/lib/auth-store";
 import { LoadingOverlay } from "@/components/LoadingOverlay";
-import { startDemoSession, DEMO_CREDENTIALS } from "@/lib/demo-session.functions";
+import { startDemoSession } from "@/lib/demo-session.functions";
+import { DEMO_CREDENTIALS } from "@/lib/auth-store";
 import {
   generateTotpSecret,
   hasTotpSecret,
@@ -14,9 +15,6 @@ import {
   formatSecret,
   clearFailures,
 } from "@/lib/totp-store";
-
-// Re-export DEMO_CREDENTIALS from auth-store — startDemoSession lives in demo-session.functions
-import { DEMO_CREDENTIALS as CREDS } from "@/lib/auth-store";
 
 export const Route = createFileRoute("/totp-setup")({
   head: () => ({ meta: [{ title: "Setup Authenticator — FED BUSINESS" }] }),
@@ -77,7 +75,7 @@ function TotpSetupPage() {
     saveTotpSecret(uid, gen.base32);
     clearFailures(uid);
     try {
-      await startDemoSession({ data: CREDS });
+      await startDemoSession({ data: DEMO_CREDENTIALS });
     } catch {
       setLoading(false);
       setErr("Could not start session. Please try again.");
