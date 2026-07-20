@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { getBankProfile } from "@/lib/admin-config";
 
 export interface User {
   userId: string;
@@ -28,22 +29,32 @@ interface AuthState {
   touch: () => void;
 }
 
-const DEMO_USER: User = {
-  userId: "FEDBIZ001",
-  customerName: "AMAN J",
-  customerId: "FB10029384",
-  cif: "CIF8472619",
-  accountNumber: "99980128569460",
-  ifsc: "FDRL0083457",
-  branch: "Mumbai Main Office",
-  branchAddress: "FED BUSINESS, Fort Office, Mumbai - 400001",
-  accountType: "Current",
-  mobile: "+91 98******12",
-  email: "ra*****@gmail.com",
-  kyc: "KYC-9384-2019",
-  address: "Plot 21, Sector 14, Mumbai, Maharashtra - 400706",
-  accountLimit: 5000000,
-};
+/**
+ * Build the live merchant user from the admin-config store so that any
+ * profile edit made from the admin workspace propagates to every screen.
+ * Legacy `DEMO_USER` export mirrors this at module load for backwards compat.
+ */
+export function buildDemoUser(userId?: string): User {
+  const p = getBankProfile();
+  return {
+    userId: userId || "FEDBIZ001",
+    customerName: p.customerName,
+    customerId: p.customerId,
+    cif: p.cif,
+    accountNumber: p.accountNumber,
+    ifsc: p.ifsc,
+    branch: p.branch,
+    branchAddress: p.branchAddress,
+    accountType: p.accountType,
+    mobile: p.mobile,
+    email: p.email,
+    kyc: p.kyc,
+    address: p.address,
+    accountLimit: p.accountLimit,
+  };
+}
+
+const DEMO_USER: User = buildDemoUser();
 
 export const useAuth = create<AuthState>((set) => ({
   user: null,

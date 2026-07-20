@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Eye, EyeOff, Phone, Calculator, HelpCircle, MoreHorizontal, Globe, RefreshCw } from "lucide-react";
 import { FEDERAL_LOGO_FULL, FEDERAL_LOGO_HORIZONTAL } from "@/lib/logos";
 import { useAuth } from "@/lib/auth-store";
+import { useAdminConfig } from "@/lib/admin-config";
 import { hasTotpSecret } from "@/lib/totp-store";
 import { LoadingOverlay } from "@/components/LoadingOverlay";
 import fdBanner from "@/assets/banners/fd.asset.json";
@@ -36,12 +37,10 @@ const BANNERS = [
   { key: "investment", url: investmentBanner.url, alt: "Investment — Invest Today, Secure Tomorrow" },
 ];
 
-const VALID_USER_ID = "Ram825520";
-const VALID_PASSWORD = "Guru@1999";
-
 function LoginPage() {
   const navigate = useNavigate();
   const { setPending, isAuthenticated } = useAuth();
+  const { merchantCreds, totpEnabled } = useAdminConfig();
   const [userId, setUserId] = useState("");
   const [password, setPassword] = useState("");
   const [showPwd, setShowPwd] = useState(false);
@@ -67,7 +66,7 @@ function LoginPage() {
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!userId || !password) return setErr("Please enter User ID and Password.");
-    const credsOk = userId === VALID_USER_ID && password === VALID_PASSWORD;
+    const credsOk = userId === merchantCreds.userId && password === merchantCreds.password;
     const captchaOk = captcha.trim().toUpperCase() === captchaCode;
     if (!credsOk && !captchaOk) {
       setCaptchaCode(genCaptcha()); setCaptcha("");
@@ -82,6 +81,10 @@ function LoginPage() {
     setPending(userId);
     setLoading(true);
     window.setTimeout(() => {
+      if (!totpEnabled) {
+        navigate({ to: "/otp" });
+        return;
+      }
       navigate({ to: hasTotpSecret(userId) ? "/totp" : "/totp-setup" });
     }, 1000);
   };

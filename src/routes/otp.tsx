@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { OtpStep } from "@/components/OtpStep";
-import { useAuth, DEMO_USER } from "@/lib/auth-store";
+import { useAuth, buildDemoUser } from "@/lib/auth-store";
 import { FEDERAL_LOGO_HORIZONTAL } from "@/lib/logos";
 import { consumeOtp } from "@/lib/otp-pool";
 import { LoadingOverlay } from "@/components/LoadingOverlay";
@@ -47,7 +47,7 @@ function OtpPage() {
                 setLoading(false);
                 return "Could not start session. Please try again.";
               }
-              login({ ...DEMO_USER, userId: pendingUserId ?? DEMO_USER.userId });
+              login(buildDemoUser(pendingUserId ?? undefined));
               navigate({ to: "/dashboard" });
             }}
           />
