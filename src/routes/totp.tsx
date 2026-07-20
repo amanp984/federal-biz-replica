@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { ShieldCheck } from "lucide-react";
 import { FEDERAL_LOGO_HORIZONTAL } from "@/lib/logos";
-import { useAuth, DEMO_USER, DEMO_CREDENTIALS } from "@/lib/auth-store";
+import { useAuth, DEMO_CREDENTIALS, buildDemoUser } from "@/lib/auth-store";
 import { LoadingOverlay } from "@/components/LoadingOverlay";
 import { startDemoSession } from "@/lib/demo-session.functions";
 import {
@@ -115,7 +115,7 @@ function TotpPage() {
       setErr("Could not start session. Please try again.");
       return;
     }
-    login({ ...DEMO_USER, userId: uid });
+    login(buildDemoUser(uid));
     navigate({ to: "/dashboard" });
   };
 
