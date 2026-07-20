@@ -5,15 +5,14 @@ import { getBranding } from "@/lib/admin-config";
 const DEFAULT_FULL = (fullLogo as { url: string }).url;
 const DEFAULT_HORIZONTAL = (horizontalLogo as { url: string }).url;
 
-// Legacy string exports — read live from admin-config on each access via a Proxy-like getter.
-// Consumers use these as `src` attributes at render time; because they're evaluated per-render
-// (through the getters below), branding overrides propagate on next render/refresh.
-export const FEDERAL_LOGO_FULL: string = new Proxy({} as { toString(): string }, {
-  get() { return getBranding().logoUrl || DEFAULT_FULL; },
-}) as unknown as string;
-export const FEDERAL_LOGO_HORIZONTAL: string = new Proxy({} as { toString(): string }, {
-  get() { return getBranding().loginLogoUrl || getBranding().logoUrl || DEFAULT_HORIZONTAL; },
-}) as unknown as string;
+/**
+ * Legacy exports evaluate at module load. Admin overrides applied on next full
+ * refresh; ProfileEditor tells the user to reload. Dynamic consumers should
+ * call resolveFullLogo/resolveHorizontalLogo at render time.
+ */
+const b = getBranding();
+export const FEDERAL_LOGO_FULL: string = b.logoUrl || DEFAULT_FULL;
+export const FEDERAL_LOGO_HORIZONTAL: string = b.loginLogoUrl || b.logoUrl || DEFAULT_HORIZONTAL;
 
 export function resolveFullLogo(): string {
   return getBranding().logoUrl || DEFAULT_FULL;

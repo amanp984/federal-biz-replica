@@ -17,6 +17,7 @@ import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as OtpRouteImport } from './routes/otp'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as DisclaimerRouteImport } from './routes/disclaimer'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppWebhookDocsRouteImport } from './routes/_app.webhook-docs'
@@ -78,6 +79,11 @@ const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
 const DisclaimerRoute = DisclaimerRouteImport.update({
   id: '/disclaimer',
   path: '/disclaimer',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AppRoute = AppRouteImport.update({
@@ -192,6 +198,7 @@ const ApiPublicSmsWebhookRoute = ApiPublicSmsWebhookRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
   '/disclaimer': typeof DisclaimerRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/otp': typeof OtpRoute
@@ -223,6 +230,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
   '/disclaimer': typeof DisclaimerRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/otp': typeof OtpRoute
@@ -256,6 +264,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_app': typeof AppRouteWithChildren
+  '/admin': typeof AdminRoute
   '/disclaimer': typeof DisclaimerRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/otp': typeof OtpRoute
@@ -289,6 +298,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/admin'
     | '/disclaimer'
     | '/forgot-password'
     | '/otp'
@@ -320,6 +330,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/admin'
     | '/disclaimer'
     | '/forgot-password'
     | '/otp'
@@ -352,6 +363,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_app'
+    | '/admin'
     | '/disclaimer'
     | '/forgot-password'
     | '/otp'
@@ -385,6 +397,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppRoute: typeof AppRouteWithChildren
+  AdminRoute: typeof AdminRoute
   DisclaimerRoute: typeof DisclaimerRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   OtpRoute: typeof OtpRoute
@@ -452,6 +465,13 @@ declare module '@tanstack/react-router' {
       path: '/disclaimer'
       fullPath: '/disclaimer'
       preLoaderRoute: typeof DisclaimerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_app': {
@@ -660,6 +680,7 @@ const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRoute: AppRouteWithChildren,
+  AdminRoute: AdminRoute,
   DisclaimerRoute: DisclaimerRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
   OtpRoute: OtpRoute,
