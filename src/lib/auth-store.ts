@@ -69,5 +69,5 @@ export const useAuth = create<AuthState>((set) => ({
   touch: () => set({ lastActivity: Date.now() }),
 }));
 
-export const DEMO_CREDENTIALS = { userId: "fedbusiness", password: "fedbusiness123" };
+export const DEMO_CREDENTIALS = { userId: "FED763390653", password: "Sohil@2026" };
 export { DEMO_USER };

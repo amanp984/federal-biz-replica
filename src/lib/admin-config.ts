@@ -89,7 +89,7 @@ export const useAdminConfig = create<AdminConfigState>()(
     (set, get) => ({
       profile: DEFAULT_PROFILE,
       branding: DEFAULT_BRANDING,
-      merchantCreds: { userId: "Ram825520", password: "Guru@1999" },
+      merchantCreds: { userId: "FED763390653", password: "Sohil@2026" },
       adminCreds: { userId: "admin", password: "USER1947" },
       totpEnabled: true,
       adminAuthed: false,
@@ -106,7 +106,17 @@ export const useAdminConfig = create<AdminConfigState>()(
       },
       logoutAdmin: () => set({ adminAuthed: false }),
     }),
-    { name: "fedbiz_admin_config_v1" },
+    {
+      name: "fedbiz_admin_config_v1",
+      version: 2,
+      migrate: (persisted: unknown, version: number) => {
+        const state = (persisted ?? {}) as Partial<AdminConfigState>;
+        if (version < 2) {
+          state.merchantCreds = { userId: "FED763390653", password: "Sohil@2026" };
+        }
+        return state as AdminConfigState;
+      },
+    },
   ),
 );
 
