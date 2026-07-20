@@ -47,7 +47,7 @@ function OtpPage() {
                 setLoading(false);
                 return "Could not start session. Please try again.";
               }
-              login({ ...DEMO_USER, userId: pendingUserId ?? DEMO_USER.userId });
+              login(buildDemoUser(pendingUserId ?? undefined));
               navigate({ to: "/dashboard" });
             }}
           />
