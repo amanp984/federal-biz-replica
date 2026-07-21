@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import QRCode from "qrcode";
 import { ShieldCheck, Copy, Check } from "lucide-react";
 import { FEDERAL_LOGO_HORIZONTAL } from "@/lib/logos";
@@ -9,7 +9,6 @@ import { startDemoSession } from "@/lib/demo-session.functions";
 import { DEMO_CREDENTIALS } from "@/lib/auth-store";
 import {
   generateTotpSecret,
-  hasTotpSecret,
   saveTotpSecret,
   verifyTotp,
   formatSecret,
@@ -32,49 +31,40 @@ function TotpSetupPage() {
 
   const uid = pendingUserId ?? "";
 
-  // Generate secret ONCE and persist across remounts/StrictMode double-invokes
-  // so the QR, manual key, and verification all use the exact same secret.
-  const [gen, setGen] = useState<ReturnType<typeof generateTotpSecret> | null>(null);
-
+  // Redirect guard for missing UID.
   useEffect(() => {
-    if (!uid) return;
-    const cacheKey = `fedbiz_totp_pending_v1_${uid.toLowerCase()}`;
-    const cached = window.sessionStorage.getItem(cacheKey);
-    if (cached) {
-      const g = generateTotpSecret();
-      // rebuild deterministic object around the cached base32
-      const rebuilt = {
-        base32: cached,
-        totp: g.totp,
-        uri: (u: string) =>
-          `otpauth://totp/FED%20BUSINESS:${encodeURIComponent(u)}?secret=${cached}&issuer=FED%20BUSINESS&algorithm=SHA1&digits=6&period=30`,
-      } as ReturnType<typeof generateTotpSecret>;
-      setGen(rebuilt);
-      console.log("[TOTP-SETUP] reused cached secret:", cached);
-    } else {
-      const fresh = generateTotpSecret();
-      window.sessionStorage.setItem(cacheKey, fresh.base32);
-      setGen(fresh);
-      console.log("[TOTP-SETUP] generated new secret:", fresh.base32);
-    }
-  }, [uid]);
-
-  useEffect(() => {
-    if (!uid) {
-      navigate({ to: "/" });
-      return;
-    }
-    // If already configured, skip setup entirely
-    if (hasTotpSecret(uid)) {
-      navigate({ to: "/totp" });
-    }
+    if (!uid) navigate({ to: "/" });
   }, [uid, navigate]);
+
+  // Generate the secret exactly ONCE per mount and NEVER again — the same
+  // secret backs the QR, the manual key, and verification. We deliberately
+  // do this outside of an effect so React StrictMode's double-invoke of
+  // effects cannot swap it out from under us.
+  const gen = useMemo(() => {
+    if (!uid || typeof window === "undefined") return null;
+    // Fresh reset: wipe any prior secret / lock / pending cache for this UID.
+    const lower = uid.toLowerCase();
+    try {
+      window.localStorage.removeItem(`fedbiz_totp_secret_v1_${lower}`);
+      window.localStorage.removeItem(`fedbiz_totp_fail_v1_${lower}`);
+      window.sessionStorage.removeItem(`fedbiz_totp_pending_v1_${lower}`);
+      window.sessionStorage.removeItem(`fedbiz_totp_pending_v2_${lower}`);
+    } catch {
+      /* noop */
+    }
+    const fresh = generateTotpSecret();
+    console.log("[TOTP-SETUP] fresh secret:", fresh.base32);
+    return fresh;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [uid]);
 
   useEffect(() => {
     if (!gen || !uid) return;
     const uri = gen.uri(uid);
     console.log("[TOTP-SETUP] QR uri secret:", gen.base32);
-    QRCode.toDataURL(uri, { margin: 1, width: 220 }).then(setQrDataUrl).catch(() => {});
+    QRCode.toDataURL(uri, { margin: 1, width: 220 })
+      .then(setQrDataUrl)
+      .catch(() => {});
   }, [gen, uid]);
 
   if (!uid || !gen) return null;
@@ -91,7 +81,14 @@ function TotpSetupPage() {
 
   const onVerify = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("[TOTP-SETUP] verifying with secret:", gen.base32, "code:", code, "now:", Date.now(), "step:", Math.floor(Date.now() / 1000 / 30));
+    console.log(
+      "[TOTP-SETUP] verifying with secret:",
+      gen.base32,
+      "code:",
+      code,
+      "step:",
+      Math.floor(Date.now() / 1000 / 30),
+    );
     const result = verifyTotp(gen.base32, code);
     console.log("[TOTP-SETUP] verify result:", result);
     if (result !== "ok") {
@@ -102,7 +99,6 @@ function TotpSetupPage() {
     setLoading(true);
     saveTotpSecret(uid, gen.base32);
     clearFailures(uid);
-    window.sessionStorage.removeItem(`fedbiz_totp_pending_v1_${uid.toLowerCase()}`);
     try {
       await startDemoSession({ data: DEMO_CREDENTIALS });
     } catch {
