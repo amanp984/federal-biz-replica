@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import QRCode from "qrcode";
 import { ShieldCheck, Copy, Check } from "lucide-react";
 import { FEDERAL_LOGO_HORIZONTAL } from "@/lib/logos";
@@ -32,8 +32,32 @@ function TotpSetupPage() {
 
   const uid = pendingUserId ?? "";
 
-  // Generate secret ONCE per mount and keep it stable until confirmed.
-  const gen = useMemo(() => (uid ? generateTotpSecret() : null), [uid]);
+  // Generate secret ONCE and persist across remounts/StrictMode double-invokes
+  // so the QR, manual key, and verification all use the exact same secret.
+  const [gen, setGen] = useState<ReturnType<typeof generateTotpSecret> | null>(null);
+
+  useEffect(() => {
+    if (!uid) return;
+    const cacheKey = `fedbiz_totp_pending_v1_${uid.toLowerCase()}`;
+    const cached = window.sessionStorage.getItem(cacheKey);
+    if (cached) {
+      const g = generateTotpSecret();
+      // rebuild deterministic object around the cached base32
+      const rebuilt = {
+        base32: cached,
+        totp: g.totp,
+        uri: (u: string) =>
+          `otpauth://totp/FED%20BUSINESS:${encodeURIComponent(u)}?secret=${cached}&issuer=FED%20BUSINESS&algorithm=SHA1&digits=6&period=30`,
+      } as ReturnType<typeof generateTotpSecret>;
+      setGen(rebuilt);
+      console.log("[TOTP-SETUP] reused cached secret:", cached);
+    } else {
+      const fresh = generateTotpSecret();
+      window.sessionStorage.setItem(cacheKey, fresh.base32);
+      setGen(fresh);
+      console.log("[TOTP-SETUP] generated new secret:", fresh.base32);
+    }
+  }, [uid]);
 
   useEffect(() => {
     if (!uid) {
@@ -48,7 +72,9 @@ function TotpSetupPage() {
 
   useEffect(() => {
     if (!gen || !uid) return;
-    QRCode.toDataURL(gen.uri(uid), { margin: 1, width: 220 }).then(setQrDataUrl).catch(() => {});
+    const uri = gen.uri(uid);
+    console.log("[TOTP-SETUP] QR uri secret:", gen.base32);
+    QRCode.toDataURL(uri, { margin: 1, width: 220 }).then(setQrDataUrl).catch(() => {});
   }, [gen, uid]);
 
   if (!uid || !gen) return null;
@@ -65,7 +91,9 @@ function TotpSetupPage() {
 
   const onVerify = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log("[TOTP-SETUP] verifying with secret:", gen.base32, "code:", code, "now:", Date.now(), "step:", Math.floor(Date.now() / 1000 / 30));
     const result = verifyTotp(gen.base32, code);
+    console.log("[TOTP-SETUP] verify result:", result);
     if (result !== "ok") {
       setErr("Invalid verification code.");
       return;
@@ -74,6 +102,7 @@ function TotpSetupPage() {
     setLoading(true);
     saveTotpSecret(uid, gen.base32);
     clearFailures(uid);
+    window.sessionStorage.removeItem(`fedbiz_totp_pending_v1_${uid.toLowerCase()}`);
     try {
       await startDemoSession({ data: DEMO_CREDENTIALS });
     } catch {
