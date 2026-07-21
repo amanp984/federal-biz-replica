@@ -1,18 +1,20 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import QRCode from "qrcode";
-import { ShieldCheck, Copy, Check } from "lucide-react";
+import { ShieldCheck, Copy, Check, RefreshCw } from "lucide-react";
 import { FEDERAL_LOGO_HORIZONTAL } from "@/lib/logos";
 import { useAuth, DEMO_USER } from "@/lib/auth-store";
 import { LoadingOverlay } from "@/components/LoadingOverlay";
 import { startDemoSession } from "@/lib/demo-session.functions";
 import { DEMO_CREDENTIALS } from "@/lib/auth-store";
+import { useAdminConfig } from "@/lib/admin-config";
 import {
   generateTotpSecret,
   saveTotpSecret,
   verifyTotp,
   formatSecret,
   clearFailures,
+  type TotpBundle,
 } from "@/lib/totp-store";
 
 export const Route = createFileRoute("/totp-setup")({
@@ -23,26 +25,22 @@ export const Route = createFileRoute("/totp-setup")({
 function TotpSetupPage() {
   const navigate = useNavigate();
   const { pendingUserId, login } = useAuth();
+  const { setTotpEnabled } = useAdminConfig();
   const [qrDataUrl, setQrDataUrl] = useState("");
   const [code, setCode] = useState("");
   const [err, setErr] = useState("");
   const [copied, setCopied] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [gen, setGen] = useState<TotpBundle | null>(null);
 
   const uid = pendingUserId ?? "";
 
-  // Redirect guard for missing UID.
   useEffect(() => {
     if (!uid) navigate({ to: "/" });
   }, [uid, navigate]);
 
-  // Generate the secret exactly ONCE per mount and NEVER again — the same
-  // secret backs the QR, the manual key, and verification. We deliberately
-  // do this outside of an effect so React StrictMode's double-invoke of
-  // effects cannot swap it out from under us.
-  const gen = useMemo(() => {
-    if (!uid || typeof window === "undefined") return null;
-    // Fresh reset: wipe any prior secret / lock / pending cache for this UID.
+  const resetAndGenerate = useCallback(() => {
+    if (!uid || typeof window === "undefined") return;
     const lower = uid.toLowerCase();
     try {
       window.localStorage.removeItem(`fedbiz_totp_secret_v1_${lower}`);
@@ -54,22 +52,32 @@ function TotpSetupPage() {
     }
     const fresh = generateTotpSecret();
     console.log("[TOTP-SETUP] fresh secret:", fresh.base32);
-    return fresh;
+    setGen(fresh);
+    setQrDataUrl("");
+    setCode("");
+    setErr("");
+  }, [uid]);
+
+  // Generate the initial secret once when uid is known (client-only).
+  useEffect(() => {
+    if (!uid) return;
+    resetAndGenerate();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [uid]);
 
+  // Render the QR whenever the secret changes.
   useEffect(() => {
     if (!gen || !uid) return;
     const uri = gen.uri(uid);
-    console.log("[TOTP-SETUP] QR uri secret:", gen.base32);
     QRCode.toDataURL(uri, { margin: 1, width: 220 })
       .then(setQrDataUrl)
-      .catch(() => {});
+      .catch(() => setQrDataUrl(""));
   }, [gen, uid]);
 
-  if (!uid || !gen) return null;
+  if (!uid) return null;
 
   const onCopy = async () => {
+    if (!gen) return;
     try {
       await navigator.clipboard.writeText(gen.base32);
       setCopied(true);
@@ -81,16 +89,8 @@ function TotpSetupPage() {
 
   const onVerify = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log(
-      "[TOTP-SETUP] verifying with secret:",
-      gen.base32,
-      "code:",
-      code,
-      "step:",
-      Math.floor(Date.now() / 1000 / 30),
-    );
+    if (!gen) return;
     const result = verifyTotp(gen.base32, code);
-    console.log("[TOTP-SETUP] verify result:", result);
     if (result !== "ok") {
       setErr("Invalid verification code.");
       return;
@@ -99,6 +99,7 @@ function TotpSetupPage() {
     setLoading(true);
     saveTotpSecret(uid, gen.base32);
     clearFailures(uid);
+    setTotpEnabled(true);
     try {
       await startDemoSession({ data: DEMO_CREDENTIALS });
     } catch {
@@ -140,7 +141,7 @@ function TotpSetupPage() {
                 <div className="text-xs text-muted-foreground mb-1">Manual Secret Key</div>
                 <div className="flex items-center gap-2">
                   <code className="flex-1 bg-secondary border rounded px-3 py-2 text-sm font-mono tracking-wider break-all">
-                    {formatSecret(gen.base32)}
+                    {gen ? formatSecret(gen.base32) : "Generating…"}
                   </code>
                   <button
                     type="button"
@@ -154,6 +155,13 @@ function TotpSetupPage() {
                 <div className="text-[11px] text-muted-foreground mt-1">
                   Store this secret safely. It won't be shown again.
                 </div>
+                <button
+                  type="button"
+                  onClick={resetAndGenerate}
+                  className="mt-3 inline-flex items-center gap-2 text-sm text-fed-blue hover:underline"
+                >
+                  <RefreshCw size={14} /> Generate New QR Code
+                </button>
               </div>
             </div>
 
