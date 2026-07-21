@@ -7,6 +7,12 @@ export const ISSUER = "FED BUSINESS";
 export const MAX_ATTEMPTS = 5;
 export const LOCK_MS = 5 * 60 * 1000;
 
+export interface TotpBundle {
+  base32: string;
+  totp: OTPAuth.TOTP;
+  uri: (userId: string) => string;
+}
+
 export function hasTotpSecret(userId: string): boolean {
   if (typeof window === "undefined") return false;
   return !!window.localStorage.getItem(SECRET_KEY(userId));
@@ -21,7 +27,7 @@ export function saveTotpSecret(userId: string, secretBase32: string) {
   window.localStorage.setItem(SECRET_KEY(userId), secretBase32);
 }
 
-export function generateTotpSecret(): { base32: string; totp: OTPAuth.TOTP; uri: (userId: string) => string } {
+export function generateTotpSecret(): TotpBundle {
   const secret = new OTPAuth.Secret({ size: 20 });
   const base32 = secret.base32;
   return {
