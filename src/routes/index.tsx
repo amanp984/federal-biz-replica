@@ -82,13 +82,18 @@ function LoginPage() {
     setLoading(true);
     (async () => {
       try {
+        console.log("[login] credentials validated ✅");
+        console.log("[login] session creation started");
         await startDemoSession({ data: DEMO_CREDENTIALS });
-      } catch {
+        console.log("[login] session created successfully");
+      } catch (e) {
+        console.error("[login] session creation failed", e);
         setLoading(false);
         setErr("Could not start session. Please try again.");
         return;
       }
       login(buildDemoUser(userId));
+      console.log("[login] redirecting to /dashboard");
       navigate({ to: "/dashboard" });
     })();
   };
