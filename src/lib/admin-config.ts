@@ -42,13 +42,11 @@ interface AdminConfigState {
   branding: Branding;
   merchantCreds: Creds;
   adminCreds: Creds;
-  totpEnabled: boolean;
   adminAuthed: boolean;
   updateProfile: (p: Partial<BankProfile>) => void;
   updateBranding: (b: Partial<Branding>) => void;
   updateMerchantCreds: (c: Partial<Creds>) => void;
   updateAdminCreds: (c: Partial<Creds>) => void;
-  setTotpEnabled: (v: boolean) => void;
   loginAdmin: (userId: string, password: string) => boolean;
   logoutAdmin: () => void;
 }
@@ -91,13 +89,11 @@ export const useAdminConfig = create<AdminConfigState>()(
       branding: DEFAULT_BRANDING,
       merchantCreds: { userId: "FED763390653", password: "Sohil@2026" },
       adminCreds: { userId: "admin", password: "USER1947" },
-      totpEnabled: true,
       adminAuthed: false,
       updateProfile: (p) => set((s) => ({ profile: { ...s.profile, ...p } })),
       updateBranding: (b) => set((s) => ({ branding: { ...s.branding, ...b } })),
       updateMerchantCreds: (c) => set((s) => ({ merchantCreds: { ...s.merchantCreds, ...c } })),
       updateAdminCreds: (c) => set((s) => ({ adminCreds: { ...s.adminCreds, ...c } })),
-      setTotpEnabled: (v) => set({ totpEnabled: v }),
       loginAdmin: (userId, password) => {
         const { adminCreds } = get();
         const ok = userId === adminCreds.userId && password === adminCreds.password;

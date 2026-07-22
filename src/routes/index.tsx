@@ -5,7 +5,8 @@ import { Eye, EyeOff, Phone, Calculator, HelpCircle, MoreHorizontal, Globe, Refr
 import { FEDERAL_LOGO_FULL, FEDERAL_LOGO_HORIZONTAL } from "@/lib/logos";
 import { useAuth } from "@/lib/auth-store";
 import { useAdminConfig } from "@/lib/admin-config";
-import { hasTotpSecret } from "@/lib/totp-store";
+import { buildDemoUser, DEMO_CREDENTIALS } from "@/lib/auth-store";
+import { startDemoSession } from "@/lib/demo-session.functions";
 import { LoadingOverlay } from "@/components/LoadingOverlay";
 import fdBanner from "@/assets/banners/fd.asset.json";
 import carBanner from "@/assets/banners/car.asset.json";
@@ -39,8 +40,8 @@ const BANNERS = [
 
 function LoginPage() {
   const navigate = useNavigate();
-  const { setPending, isAuthenticated } = useAuth();
-  const { merchantCreds, totpEnabled } = useAdminConfig();
+  const { login, isAuthenticated } = useAuth();
+  const { merchantCreds } = useAdminConfig();
   const [userId, setUserId] = useState("");
   const [password, setPassword] = useState("");
   const [showPwd, setShowPwd] = useState(false);
@@ -78,15 +79,18 @@ function LoginPage() {
       return setErr("Incorrect Captcha");
     }
     setErr("");
-    setPending(userId);
     setLoading(true);
-    window.setTimeout(() => {
-      if (!totpEnabled) {
-        navigate({ to: "/otp" });
+    (async () => {
+      try {
+        await startDemoSession({ data: DEMO_CREDENTIALS });
+      } catch {
+        setLoading(false);
+        setErr("Could not start session. Please try again.");
         return;
       }
-      navigate({ to: hasTotpSecret(userId) ? "/totp" : "/totp-setup" });
-    }, 1000);
+      login(buildDemoUser(userId));
+      navigate({ to: "/dashboard" });
+    })();
   };
 
   return (
