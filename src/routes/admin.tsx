@@ -357,7 +357,7 @@ function ProfileEditor() {
 }
 
 function CredsEditor() {
-  const { merchantCreds, adminCreds, totpEnabled, updateMerchantCreds, updateAdminCreds, setTotpEnabled, profile, updateProfile } = useAdminConfig();
+  const { merchantCreds, adminCreds, updateMerchantCreds, updateAdminCreds, profile, updateProfile } = useAdminConfig();
   const [m, setM] = useState(merchantCreds);
   const [a, setA] = useState(adminCreds);
   const [mob, setMob] = useState(profile.mobile);
@@ -372,10 +372,6 @@ function CredsEditor() {
           <TxnField label="Mobile Number" value={mob} onChange={setMob} />
           <TxnField label="Email" value={em} onChange={setEm} />
         </div>
-        <label className="flex items-center gap-2 mt-3 text-sm">
-          <input type="checkbox" checked={totpEnabled} onChange={(e) => setTotpEnabled(e.target.checked)} />
-          Google Authenticator (TOTP) enabled
-        </label>
         <div className="flex justify-end mt-3">
           <button
             onClick={() => { updateMerchantCreds(m); updateProfile({ mobile: mob, email: em }); alert("Merchant credentials updated. Old credentials are now invalid."); }}
