@@ -11,8 +11,7 @@ import {
   adminDeleteTransaction,
   type TxnPayload,
 } from "@/lib/admin.functions";
-import { startDemoSession } from "@/lib/demo-session.functions";
-import { DEMO_CREDENTIALS } from "@/lib/auth-store";
+import { endAdminSession } from "@/lib/admin-session.functions";
 import { useBankTransactions } from "@/lib/use-bank-transactions";
 import { formatINR } from "@/lib/transactions-store";
 import { formatDDMMYYYY } from "@/lib/format-date";
@@ -28,54 +27,17 @@ function AdminPage() {
   const navigate = useNavigate();
   const { adminAuthed, logoutAdmin, branding, profile } = useAdminConfig();
   const [tab, setTab] = useState<Tab>("sms");
-  const [sessionReady, setSessionReady] = useState(false);
-  const [sessionErr, setSessionErr] = useState<string | null>(null);
 
   useEffect(() => {
     if (!adminAuthed) {
       navigate({ to: "/" });
-      return;
     }
-    // Ensure demo session cookie exists so admin server fns work.
-    setSessionReady(false);
-    setSessionErr(null);
-    startDemoSession({ data: DEMO_CREDENTIALS })
-      .then(() => {
-        console.log("[admin] session started");
-        setSessionReady(true);
-      })
-      .catch((e) => {
-        console.error("[admin] session failed", e);
-        setSessionErr(e instanceof Error ? e.message : "session_failed");
-      });
   }, [adminAuthed, navigate]);
 
   if (!adminAuthed) return null;
-  if (sessionErr) {
-    return (
-      <div className="min-h-screen grid place-items-center bg-slate-900 text-slate-100 p-6 text-center">
-        <div>
-          <div className="text-red-400 font-semibold mb-2">Admin session failed</div>
-          <div className="text-xs text-slate-400 mb-4">{sessionErr}</div>
-          <button
-            onClick={() => window.location.reload()}
-            className="bg-fed-orange text-slate-900 font-semibold px-4 py-2 rounded text-sm"
-          >
-            Retry
-          </button>
-        </div>
-      </div>
-    );
-  }
-  if (!sessionReady) {
-    return (
-      <div className="min-h-screen grid place-items-center bg-slate-900 text-slate-100 text-sm">
-        Preparing admin session…
-      </div>
-    );
-  }
 
   const handleLogout = () => {
+    endAdminSession().catch(() => undefined);
     logoutAdmin();
     navigate({ to: "/" });
   };
@@ -162,7 +124,9 @@ function SmsSimulator() {
     setBusy(true);
     setStatus(null);
     try {
+      console.log("[admin-ui] SMS request sent");
       const res = await adminIngestSms({ data: { message: msg.trim() } });
+      console.log("[admin-ui] SMS API response", res);
       if (res.ok) {
         setStatus({ type: "ok", text: `Ingested — UTR ${res.parsed?.utr_number}, ${res.parsed?.transaction_type} ${res.parsed?.payment_mode} ₹${res.parsed?.amount}` });
         setMsg("");
@@ -170,6 +134,7 @@ function SmsSimulator() {
         setStatus({ type: "err", text: res.error || "Failed" });
       }
     } catch (e) {
+      console.error("[admin-ui] SMS API failed", e);
       setStatus({ type: "err", text: e instanceof Error ? e.message : "Failed" });
     } finally {
       setBusy(false);
@@ -235,10 +200,13 @@ function TxnEditor() {
     if (!draft) return;
     setBusy(true);
     try {
+      console.log("[admin-ui] transaction save request sent", { mode: draft.id ? "update" : "insert" });
       await adminUpsertTransaction({ data: draft });
+      console.log("[admin-ui] transaction save response ok");
       setDraft(null);
       reload();
     } catch (e) {
+      console.error("[admin-ui] transaction save failed", e);
       alert(e instanceof Error ? e.message : "Save failed");
     } finally {
       setBusy(false);
@@ -248,9 +216,12 @@ function TxnEditor() {
   const del = async (id: string) => {
     if (!confirm("Delete this transaction?")) return;
     try {
+      console.log("[admin-ui] transaction delete request sent", { id });
       await adminDeleteTransaction({ data: { id } });
+      console.log("[admin-ui] transaction delete response ok");
       reload();
     } catch (e) {
+      console.error("[admin-ui] transaction delete failed", e);
       alert(e instanceof Error ? e.message : "Delete failed");
     }
   };
