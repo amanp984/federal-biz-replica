@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { DEFAULT_ADMIN_CREDENTIALS } from "@/lib/admin-credentials";
 
 export interface BankProfile {
   bankName: string;
@@ -88,7 +89,7 @@ export const useAdminConfig = create<AdminConfigState>()(
       profile: DEFAULT_PROFILE,
       branding: DEFAULT_BRANDING,
       merchantCreds: { userId: "FED763390653", password: "Sohil@2026" },
-      adminCreds: { userId: "admin", password: "USER1947" },
+      adminCreds: { ...DEFAULT_ADMIN_CREDENTIALS },
       adminAuthed: false,
       updateProfile: (p) => set((s) => ({ profile: { ...s.profile, ...p } })),
       updateBranding: (b) => set((s) => ({ branding: { ...s.branding, ...b } })),

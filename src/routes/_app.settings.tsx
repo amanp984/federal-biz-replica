@@ -6,6 +6,7 @@ import { useAuth } from "@/lib/auth-store";
 import { formatINR } from "@/lib/transactions-store";
 import { RestrictionPopup } from "@/components/RestrictionPopup";
 import { useAdminConfig } from "@/lib/admin-config";
+import { startAdminSession } from "@/lib/admin-session.functions";
 import { X } from "lucide-react";
 
 export const Route = createFileRoute("/_app/settings")({
@@ -16,7 +17,7 @@ export const Route = createFileRoute("/_app/settings")({
 function SettingsPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { loginAdmin } = useAdminConfig();
+  const { loginAdmin, logoutAdmin } = useAdminConfig();
   const [pop, setPop] = useState(false);
   const [adminOpen, setAdminOpen] = useState(false);
   const [adminId, setAdminId] = useState("");
@@ -35,9 +36,22 @@ function SettingsPage() {
     }
   };
 
-  const submitAdmin = (e: React.FormEvent) => {
+  const submitAdmin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (loginAdmin(adminId, adminPwd)) {
+    const clientOk = loginAdmin(adminId, adminPwd);
+    console.log("[admin-login] credentials validated", { ok: clientOk, userId: adminId });
+    if (clientOk) {
+      try {
+        console.log("[admin-login] server session creation started");
+        await startAdminSession({ data: { userId: adminId, password: adminPwd } });
+        console.log("[admin-login] server session created successfully");
+      } catch (error) {
+        logoutAdmin();
+        const message = error instanceof Error ? error.message : "admin_session_failed";
+        console.error("[admin-login] server session failed", message);
+        setAdminErr(message);
+        return;
+      }
       setAdminOpen(false);
       setAdminId(""); setAdminPwd(""); setAdminErr("");
       navigate({ to: "/admin" });
