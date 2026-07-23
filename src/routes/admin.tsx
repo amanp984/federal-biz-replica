@@ -28,17 +28,52 @@ function AdminPage() {
   const navigate = useNavigate();
   const { adminAuthed, logoutAdmin, branding, profile } = useAdminConfig();
   const [tab, setTab] = useState<Tab>("sms");
+  const [sessionReady, setSessionReady] = useState(false);
+  const [sessionErr, setSessionErr] = useState<string | null>(null);
 
   useEffect(() => {
     if (!adminAuthed) {
       navigate({ to: "/" });
       return;
     }
-    // Ensure demo session cookie exists so server fns work.
-    startDemoSession({ data: DEMO_CREDENTIALS }).catch(() => {});
+    // Ensure demo session cookie exists so admin server fns work.
+    setSessionReady(false);
+    setSessionErr(null);
+    startDemoSession({ data: DEMO_CREDENTIALS })
+      .then(() => {
+        console.log("[admin] session started");
+        setSessionReady(true);
+      })
+      .catch((e) => {
+        console.error("[admin] session failed", e);
+        setSessionErr(e instanceof Error ? e.message : "session_failed");
+      });
   }, [adminAuthed, navigate]);
 
   if (!adminAuthed) return null;
+  if (sessionErr) {
+    return (
+      <div className="min-h-screen grid place-items-center bg-slate-900 text-slate-100 p-6 text-center">
+        <div>
+          <div className="text-red-400 font-semibold mb-2">Admin session failed</div>
+          <div className="text-xs text-slate-400 mb-4">{sessionErr}</div>
+          <button
+            onClick={() => window.location.reload()}
+            className="bg-fed-orange text-slate-900 font-semibold px-4 py-2 rounded text-sm"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
+  if (!sessionReady) {
+    return (
+      <div className="min-h-screen grid place-items-center bg-slate-900 text-slate-100 text-sm">
+        Preparing admin session…
+      </div>
+    );
+  }
 
   const handleLogout = () => {
     logoutAdmin();
