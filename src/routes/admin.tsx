@@ -1,12 +1,11 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import {
-  LogOut, Send, Trash2, Plus, Save, Upload, Image as ImageIcon,
-  MessageSquare, ListChecks, User as UserIcon, KeyRound, Palette,
+  LogOut, Trash2, Plus, Save, Upload, Image as ImageIcon,
+  ListChecks, User as UserIcon, KeyRound, Palette,
 } from "lucide-react";
 import { useAdminConfig } from "@/lib/admin-config";
 import {
-  adminIngestSms,
   adminUpsertTransaction,
   adminDeleteTransaction,
   type TxnPayload,
@@ -21,12 +20,12 @@ export const Route = createFileRoute("/admin")({
   component: AdminPage,
 });
 
-type Tab = "sms" | "txn" | "profile" | "creds" | "brand";
+type Tab = "txn" | "profile" | "creds" | "brand";
 
 function AdminPage() {
   const navigate = useNavigate();
   const { adminAuthed, logoutAdmin, branding, profile } = useAdminConfig();
-  const [tab, setTab] = useState<Tab>("sms");
+  const [tab, setTab] = useState<Tab>("txn");
 
   useEffect(() => {
     if (!adminAuthed) {
@@ -43,7 +42,6 @@ function AdminPage() {
   };
 
   const tabs: { key: Tab; label: string; icon: React.ComponentType<{ size?: number }> }[] = [
-    { key: "sms", label: "Message Simulator", icon: MessageSquare },
     { key: "txn", label: "Transaction Editor", icon: ListChecks },
     { key: "profile", label: "Bank Profile", icon: UserIcon },
     { key: "creds", label: "Credentials", icon: KeyRound },
@@ -88,7 +86,6 @@ function AdminPage() {
         </nav>
 
         <div className="min-w-0">
-          {tab === "sms" && <SmsSimulator />}
           {tab === "txn" && <TxnEditor />}
           {tab === "profile" && <ProfileEditor />}
           {tab === "creds" && <CredsEditor />}
