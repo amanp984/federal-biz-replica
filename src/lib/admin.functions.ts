@@ -1,5 +1,4 @@
 import { createServerFn } from "@tanstack/react-start";
-import { parseSms } from "@/lib/sms-parser";
 
 export interface TxnPayload {
   id?: string;
@@ -72,40 +71,4 @@ export const adminDeleteTransaction = createServerFn({ method: "POST" })
     }
     console.log("[admin-api] delete success", { id: data.id });
     return { ok: true };
-  });
-
-export const adminIngestSms = createServerFn({ method: "POST" })
-  .inputValidator((data: { message: string }) => data)
-  .handler(async ({ data }) => {
-    const { supabaseAdmin, admin } = await guardedAdmin("adminIngestSms");
-    console.log("[admin-api] sms ingest request", {
-      userId: admin.userId,
-      messageLength: data.message.length,
-    });
-    const parsed = parseSms(data.message);
-    if (!parsed) {
-      console.warn("[admin-api] sms parser failed");
-      return { ok: false, error: "Could not parse SMS. Check format." };
-    }
-    // Dedup by UTR
-    const { data: existing } = await supabaseAdmin
-      .from("bank_transactions")
-      .select("id")
-      .eq("utr_number", parsed.utr_number)
-      .maybeSingle();
-    if (existing) {
-      console.warn("[admin-api] sms duplicate", { utr: parsed.utr_number });
-      return { ok: false, error: `Duplicate UTR ${parsed.utr_number} — transaction already exists.` };
-    }
-    const { data: row, error } = await supabaseAdmin
-      .from("bank_transactions")
-      .insert(parsed)
-      .select("id")
-      .single();
-    if (error) {
-      console.error("[admin-api] sms insert failed", { error: error.message });
-      return { ok: false, error: error.message };
-    }
-    console.log("[admin-api] sms insert success", { id: row?.id, utr: parsed.utr_number });
-    return { ok: true, id: row?.id, parsed };
   });

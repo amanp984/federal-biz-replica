@@ -5,7 +5,7 @@ import { parseSms } from "@/lib/sms-parser";
 const CORS = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, x-webhook-secret",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization, x-webhook-secret",
 } as const;
 
 function json(body: unknown, status = 200) {
@@ -46,18 +46,23 @@ export const Route = createFileRoute("/api/public/sms-webhook")({
           ok: true,
           endpoint: "/api/public/sms-webhook",
           method: "POST",
-          required_header: "x-webhook-secret: <your secret>",
+          required_header:
+            "Authorization: Bearer <secret>  OR  x-webhook-secret: <secret>",
           accepts: ["Direct transaction JSON", "SMS forwarder JSON"],
         }),
 
       POST: async ({ request }) => {
-        const secret = request.headers.get("x-webhook-secret");
-        const expected = process.env.WEBHOOK_SECRET;
+        const auth = request.headers.get("authorization") ?? "";
+        const bearer = /^Bearer\s+(.+)$/i.exec(auth.trim())?.[1]?.trim() ?? null;
+        const secret = request.headers.get("x-webhook-secret")?.trim() || bearer;
+        const expected =
+          process.env.SMS_WEBHOOK_SECRET || process.env.WEBHOOK_SECRET;
         if (!expected) {
-          console.error("[sms-webhook] WEBHOOK_SECRET not configured");
+          console.error("[sms-webhook] SMS_WEBHOOK_SECRET not configured");
           return json({ ok: false, error: "server_misconfigured" }, 500);
         }
         if (!secret || secret !== expected) {
+          console.warn("[sms-webhook] unauthorized request");
           return json({ ok: false, error: "unauthorized" }, 401);
         }
 

@@ -1,12 +1,11 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import {
-  LogOut, Send, Trash2, Plus, Save, Upload, Image as ImageIcon,
-  MessageSquare, ListChecks, User as UserIcon, KeyRound, Palette,
+  LogOut, Trash2, Plus, Save, Upload, Image as ImageIcon,
+  ListChecks, User as UserIcon, KeyRound, Palette,
 } from "lucide-react";
 import { useAdminConfig } from "@/lib/admin-config";
 import {
-  adminIngestSms,
   adminUpsertTransaction,
   adminDeleteTransaction,
   type TxnPayload,
@@ -21,12 +20,12 @@ export const Route = createFileRoute("/admin")({
   component: AdminPage,
 });
 
-type Tab = "sms" | "txn" | "profile" | "creds" | "brand";
+type Tab = "txn" | "profile" | "creds" | "brand";
 
 function AdminPage() {
   const navigate = useNavigate();
   const { adminAuthed, logoutAdmin, branding, profile } = useAdminConfig();
-  const [tab, setTab] = useState<Tab>("sms");
+  const [tab, setTab] = useState<Tab>("txn");
 
   useEffect(() => {
     if (!adminAuthed) {
@@ -43,7 +42,6 @@ function AdminPage() {
   };
 
   const tabs: { key: Tab; label: string; icon: React.ComponentType<{ size?: number }> }[] = [
-    { key: "sms", label: "Message Simulator", icon: MessageSquare },
     { key: "txn", label: "Transaction Editor", icon: ListChecks },
     { key: "profile", label: "Bank Profile", icon: UserIcon },
     { key: "creds", label: "Credentials", icon: KeyRound },
@@ -88,7 +86,6 @@ function AdminPage() {
         </nav>
 
         <div className="min-w-0">
-          {tab === "sms" && <SmsSimulator />}
           {tab === "txn" && <TxnEditor />}
           {tab === "profile" && <ProfileEditor />}
           {tab === "creds" && <CredsEditor />}
@@ -105,79 +102,6 @@ function Card({ title, children }: { title: string; children: React.ReactNode })
       <header className="px-4 py-3 border-b border-slate-800 font-semibold text-sm">{title}</header>
       <div className="p-4">{children}</div>
     </section>
-  );
-}
-
-function SmsSimulator() {
-  const [msg, setMsg] = useState("");
-  const [status, setStatus] = useState<{ type: "ok" | "err"; text: string } | null>(null);
-  const [busy, setBusy] = useState(false);
-
-  const samples = [
-    "Rs 6000.00 debited from A/c XX8572 via UPI to DAWOOD SHAIKH. Ref No 983664278342. Avl Bal Rs 10,850.00.",
-    "Rs 12,000.00 credited to A/c XX8572 via IMPS from RAHUL KUMAR. Ref 616748509491. Avl Bal Rs 22,850.00.",
-    "Rs 25000 debited via NEFT to A/c XX4321 RAVI TRADERS UTR N123456789012. Bal Rs 8,450.00.",
-  ];
-
-  const send = async () => {
-    if (!msg.trim()) return;
-    setBusy(true);
-    setStatus(null);
-    try {
-      console.log("[admin-ui] SMS request sent");
-      const res = await adminIngestSms({ data: { message: msg.trim() } });
-      console.log("[admin-ui] SMS API response", res);
-      if (res.ok) {
-        setStatus({ type: "ok", text: `Ingested — UTR ${res.parsed?.utr_number}, ${res.parsed?.transaction_type} ${res.parsed?.payment_mode} ₹${res.parsed?.amount}` });
-        setMsg("");
-      } else {
-        setStatus({ type: "err", text: res.error || "Failed" });
-      }
-    } catch (e) {
-      console.error("[admin-ui] SMS API failed", e);
-      setStatus({ type: "err", text: e instanceof Error ? e.message : "Failed" });
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  return (
-    <Card title="SMS Message Simulator">
-      <p className="text-xs text-slate-400 mb-3">
-        Paste any banking SMS. It goes through the same parser + database path as the SMS webhook.
-      </p>
-      <textarea
-        value={msg}
-        onChange={(e) => setMsg(e.target.value)}
-        placeholder="Rs 1000.00 credited to A/c XX1234 via UPI from RAJESH. Ref 123456789012."
-        className="w-full h-40 bg-slate-900 border border-slate-800 rounded p-3 text-sm text-slate-100"
-      />
-      <div className="flex flex-wrap gap-2 mt-2">
-        {samples.map((s, i) => (
-          <button
-            key={i}
-            onClick={() => setMsg(s)}
-            className="text-[11px] bg-slate-800/70 hover:bg-slate-800 px-2 py-1 rounded"
-          >
-            Sample {i + 1}
-          </button>
-        ))}
-      </div>
-      <div className="flex items-center gap-3 mt-3">
-        <button
-          onClick={send}
-          disabled={busy || !msg.trim()}
-          className="bg-fed-orange text-slate-900 font-semibold px-4 py-2 rounded disabled:opacity-50 flex items-center gap-2"
-        >
-          <Send size={14} /> {busy ? "Sending…" : "Send"}
-        </button>
-        {status && (
-          <div className={`text-sm ${status.type === "ok" ? "text-emerald-400" : "text-red-400"}`}>
-            {status.text}
-          </div>
-        )}
-      </div>
-    </Card>
   );
 }
 
