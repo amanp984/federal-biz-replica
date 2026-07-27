@@ -46,7 +46,8 @@ export const Route = createFileRoute("/api/public/sms-webhook")({
           ok: true,
           endpoint: "/api/public/sms-webhook",
           method: "POST",
-          required_header: "x-webhook-secret: <your secret>",
+          required_header:
+            "Authorization: Bearer <secret>  OR  x-webhook-secret: <secret>",
           accepts: ["Direct transaction JSON", "SMS forwarder JSON"],
         }),
 
