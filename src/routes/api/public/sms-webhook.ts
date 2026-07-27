@@ -165,7 +165,7 @@ export const Route = createFileRoute("/api/public/sms-webhook")({
             .single();
           if (error) {
             if ((error as { code?: string }).code === "23505") {
-              return json({ ok: false, error: "duplicate_utr", utr_number: direct.data.utr_number }, 409);
+              return json({ ok: true, duplicate: true, utr_number: direct.data.utr_number }, 200);
             }
             console.error("[sms-webhook] insert error", error);
             return json({ ok: false, error: "database_error" }, 500);
@@ -222,7 +222,7 @@ export const Route = createFileRoute("/api/public/sms-webhook")({
           .single();
         if (error) {
           if ((error as { code?: string }).code === "23505") {
-            return json({ ok: false, error: "duplicate_utr", utr_number: parsed.utr_number }, 409);
+            return json({ ok: true, duplicate: true, utr_number: parsed.utr_number }, 200);
           }
           console.error("[sms-webhook] insert error (sms)", error);
           return json({ ok: false, error: "database_error" }, 500);
