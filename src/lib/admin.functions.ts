@@ -1,5 +1,4 @@
 import { createServerFn } from "@tanstack/react-start";
-import { parseSms } from "@/lib/sms-parser";
 
 export interface TxnPayload {
   id?: string;
