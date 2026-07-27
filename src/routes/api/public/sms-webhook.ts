@@ -52,25 +52,103 @@ export const Route = createFileRoute("/api/public/sms-webhook")({
         }),
 
       POST: async ({ request }) => {
+        const reqId = Math.random().toString(36).slice(2, 8);
+        const hdrs: Record<string, string> = {};
+        request.headers.forEach((v, k) => {
+          hdrs[k] = /authorization|secret|cookie/i.test(k)
+            ? `${v.slice(0, 6)}…(len ${v.length})`
+            : v;
+        });
+        console.log(`[sms-webhook][${reqId}] POST`, request.url, JSON.stringify(hdrs));
+
         const auth = request.headers.get("authorization") ?? "";
         const bearer = /^Bearer\s+(.+)$/i.exec(auth.trim())?.[1]?.trim() ?? null;
-        const secret = request.headers.get("x-webhook-secret")?.trim() || bearer;
+        const url = new URL(request.url);
+        const querySecret = url.searchParams.get("secret")?.trim() || null;
+        const secret =
+          request.headers.get("x-webhook-secret")?.trim() || bearer || querySecret;
         const expected =
           process.env.SMS_WEBHOOK_SECRET || process.env.WEBHOOK_SECRET;
+        console.log(
+          `[sms-webhook][${reqId}] secret present=${!!secret} source=${
+            request.headers.get("x-webhook-secret")
+              ? "x-webhook-secret"
+              : bearer
+                ? "bearer"
+                : querySecret
+                  ? "query"
+                  : "none"
+          } match=${!!secret && secret === expected}`,
+        );
         if (!expected) {
           console.error("[sms-webhook] SMS_WEBHOOK_SECRET not configured");
           return json({ ok: false, error: "server_misconfigured" }, 500);
         }
         if (!secret || secret !== expected) {
-          console.warn("[sms-webhook] unauthorized request");
-          return json({ ok: false, error: "unauthorized" }, 401);
+          console.warn(`[sms-webhook][${reqId}] unauthorized`);
+          return json(
+            {
+              ok: false,
+              error: "unauthorized",
+              reason: secret
+                ? "secret_mismatch"
+                : "missing x-webhook-secret / Authorization: Bearer header",
+            },
+            401,
+          );
         }
 
+        const raw = await request.text();
+        console.log(
+          `[sms-webhook][${reqId}] raw body (${raw.length} chars):`,
+          raw.slice(0, 1000),
+        );
         let body: unknown;
         try {
-          body = await request.json();
+          body = JSON.parse(raw);
         } catch {
-          return json({ ok: false, error: "invalid_json" }, 400);
+          // Some forwarders POST form-encoded or plain text — accept those too.
+          try {
+            const params = new URLSearchParams(raw);
+            const obj = Object.fromEntries(params.entries());
+            if (obj.message || obj.msg || obj.text) {
+              body = {
+                message: obj.message ?? obj.msg ?? obj.text,
+                sender: obj.sender ?? obj.from,
+                timestamp: obj.timestamp ?? obj.time,
+                id: obj.id,
+              };
+            } else if (raw.trim().length > 3) {
+              body = { message: raw.trim() };
+            } else {
+              throw new Error("empty");
+            }
+          } catch {
+            console.warn(`[sms-webhook][${reqId}] invalid_json`);
+            return json(
+              { ok: false, error: "invalid_json", received: raw.slice(0, 200) },
+              400,
+            );
+          }
+        }
+        console.log(`[sms-webhook][${reqId}] parsed body:`, JSON.stringify(body));
+
+        // Unsubstituted SMS-forwarder placeholders ⇒ tell the user plainly.
+        const msgField =
+          typeof (body as { message?: unknown })?.message === "string"
+            ? ((body as { message: string }).message)
+            : "";
+        if (/^\{\s*(msg|message|text)\s*\}$/i.test(msgField.trim())) {
+          console.warn(`[sms-webhook][${reqId}] placeholder not substituted`);
+          return json(
+            {
+              ok: false,
+              error: "placeholder_not_substituted",
+              message:
+                "The forwarder sent the literal text {msg}. Grant the app SMS/Notification access so it substitutes the real message.",
+            },
+            422,
+          );
         }
 
         const { supabaseAdmin } = await import(
@@ -99,6 +177,12 @@ export const Route = createFileRoute("/api/public/sms-webhook")({
         // SMS forwarder shape
         const sms = SmsPayload.safeParse(body);
         if (!sms.success) {
+          console.warn(
+            `[sms-webhook][${reqId}] invalid_payload`,
+            JSON.stringify(sms.error.flatten()),
+            "direct errors:",
+            JSON.stringify(direct.error.flatten()),
+          );
           return json(
             {
               ok: false,
@@ -116,15 +200,16 @@ export const Route = createFileRoute("/api/public/sms-webhook")({
             : sms.data.timestamp;
         const parsed = parseSms(sms.data.message, ts);
         if (!parsed) {
-          console.warn("[sms-webhook] unparseable sms", {
-            sender: sms.data.sender,
-            preview: sms.data.message.slice(0, 80),
-          });
+          console.warn(
+            `[sms-webhook][${reqId}] unparseable sms from ${sms.data.sender}:`,
+            sms.data.message.slice(0, 300),
+          );
           return json(
             {
               ok: false,
               error: "unparseable_sms",
               message: "Could not extract transaction details from SMS body.",
+              received_message: sms.data.message.slice(0, 300),
             },
             422,
           );
