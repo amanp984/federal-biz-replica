@@ -1,0 +1,1 @@
+DELETE FROM public.bank_transactions WHERE utr_number = 'DOMTEST27072026';
