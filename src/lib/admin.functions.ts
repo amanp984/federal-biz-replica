@@ -72,4 +72,3 @@ export const adminDeleteTransaction = createServerFn({ method: "POST" })
     console.log("[admin-api] delete success", { id: data.id });
     return { ok: true };
   });
-  });
