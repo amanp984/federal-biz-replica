@@ -64,7 +64,7 @@ function WebhookDocs() {
 
   const curlDirect = `curl -X POST '${fullUrl}' \\
   -H 'Content-Type: application/json' \\
-  -H 'x-webhook-secret: <YOUR_SECRET>' \\
+  -H 'Authorization: Bearer <YOUR_SECRET>' \\
   -d '${directExample.replace(/\n\s*/g, " ")}'`;
 
   const smsForwarderTemplate = JSON.stringify(
@@ -103,7 +103,9 @@ function WebhookDocs() {
           <code className="font-mono text-xs sm:text-sm break-all">{fullUrl}</code>
         </div>
         <p className="text-xs text-muted-foreground">
-          Required header: <code className="font-mono">x-webhook-secret: &lt;your secret&gt;</code>
+          Required header (either one):{" "}
+          <code className="font-mono">Authorization: Bearer &lt;your secret&gt;</code> or{" "}
+          <code className="font-mono">x-webhook-secret: &lt;your secret&gt;</code>
         </p>
       </section>
 
@@ -138,7 +140,7 @@ function WebhookDocs() {
         <CodeBlock code={successResponse} />
         <p className="text-xs text-muted-foreground mt-2">Errors:</p>
         <ul className="text-xs text-muted-foreground list-disc ml-5 space-y-1">
-          <li><code>401 unauthorized</code> — missing or wrong <code>x-webhook-secret</code></li>
+          <li><code>401 unauthorized</code> — missing or wrong secret header</li>
           <li><code>400 invalid_json</code> — body is not valid JSON</li>
           <li><code>400 invalid_payload</code> — schema validation failed (see <code>details</code>)</li>
           <li><code>422 unparseable_sms</code> — SMS body could not be parsed</li>
